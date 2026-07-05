@@ -14,6 +14,7 @@ Return one of:
 
 - ready;
 - needs revision;
+- blocked;
 - blocked by missing user input.
 
 If blocked by missing user input, name the missing input and the natural question to ask.

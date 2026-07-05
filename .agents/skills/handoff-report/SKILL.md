@@ -10,4 +10,4 @@ Update `HANDOFF.md` with current focus, last completed work, next action, blocke
 
 Include missing human input separately from routine next action when applicable. If next work is blocked by missing user input, make that clear.
 
-Then report work performed, validation status, state updated, decisions, human decisions needed, and next action.
+Then report work performed, validation status, state updated, decisions, human input needed, and next action.

@@ -17,7 +17,7 @@ Check:
 - state document accuracy.
 
 Return:
-- ready / needs revision / blocked by missing user input;
+- ready / needs revision / blocked / blocked by missing user input;
 - reasons;
 - specific required changes;
 - if blocked by missing user input, the missing input and the natural question to ask;

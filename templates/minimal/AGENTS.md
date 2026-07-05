@@ -88,6 +88,6 @@ Not run:
 
 ### Decisions
 
-### Needs human decision
+### Needs human input
 
 ### Next

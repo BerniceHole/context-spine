@@ -220,7 +220,7 @@ Do not edit history to make the project look cleaner. Dirty history is often the
 
 `HANDOFF.md` is the next-session survival document.
 
-It should remain short and answer: the latest completed work, the current focus, the next action, blockers, human decisions needed, validation that passed, and validation that did not run.
+It should remain short and answer: the latest completed work, the current focus, the next action, blockers, human input needed, validation that passed, and validation that did not run.
 
 `HANDOFF.md` should be updated at the end of every meaningful session.
 
@@ -391,7 +391,7 @@ Update the minimum necessary state documents.
 
 ### 9.9 Report
 
-The final report should include work performed, validations, state updates, decisions, human decisions needed, and next action.
+The final report should include work performed, validations, state updates, decisions, human input needed, and next action.
 
 ---
 
@@ -646,7 +646,7 @@ If they do not exist, propose the smallest viable Context Spine setup. Do not cr
 First produce:
 1. a short assessment of the repository state;
 2. the minimal files you recommend creating or updating;
-3. any ambiguity that requires human decision before setup.
+3. any missing human input before setup.
 
 Do not implement product features during setup unless explicitly asked.
 ```
@@ -670,7 +670,7 @@ Then report:
 - active task or next action;
 - known blockers;
 - validations last run;
-- human decisions needed;
+- human input needed, including decisions;
 - any contradictions or stale state you notice.
 
 Do not start implementation until the current state and next action are clear.
@@ -682,6 +682,8 @@ Use this when a request is broad, risky, ambiguous, or likely to touch multiple 
 
 ```other
 Convert the request into a Context Spine work order.
+
+Before producing the work order, identify missing user inputs. If the task cannot be responsibly scoped without them, ask first instead of drafting the work order.
 
 The work order must include:
 - goal;
@@ -696,7 +698,7 @@ The work order must include:
 - done conditions;
 - state documents to update if the task succeeds.
 
-If the request touches hard-stop areas, list the decisions needed before implementation.
+If the request touches hard-stop areas, list the human input or decisions needed before implementation.
 
 Do not implement yet. Produce the work order first.
 ```
@@ -723,7 +725,7 @@ Final report must include:
 - files changed;
 - validations passed, failed, and not run;
 - state documents updated;
-- decisions made or needed;
+- decisions made and human input needed;
 - next action.
 ```
 
@@ -768,9 +770,10 @@ Check:
 - state document accuracy.
 
 Return:
-- ready to ship / needs revision / blocked;
+- ready / needs revision / blocked / blocked by missing user input;
 - reasons;
 - specific required changes;
+- if blocked by missing user input, the missing input and the natural question to ask;
 - what should not be changed further.
 ```
 
@@ -787,16 +790,19 @@ Update ai-state/HANDOFF.md with:
 - next action;
 - blockers;
 - human decisions needed;
+- missing human input, separately from routine next action when applicable;
 - validation results;
 - files or areas touched;
 - notes for the next session.
+
+If next work is blocked by missing user input, make that clear.
 
 Then produce a short final report for the human:
 - work completed;
 - what was verified;
 - what was not verified;
 - what state documents changed;
-- what decision is needed next, if any.
+- what human input is needed next, if any.
 ```
 
 ---
@@ -889,6 +895,10 @@ This repository uses Context Spine. The repository state, not chat history, is t
 - Do not perform opportunistic refactors unless requested.
 - Do not treat DRAFT.md as source of truth.
 - Do not rely on tool memory or auto-memory for required team rules.
+- Before preparing next operational steps, check whether required human input is missing.
+- Human input may be intent, source material, constraints, preferences, priorities, research direction, acceptance criteria, scope boundary, files, examples, or a decision.
+- If missing input affects hard-stop areas, scope, quality, or project identity, ask before proceeding.
+- Do not turn missing input into assumptions or premature next steps.
 
 ## Hard-stop areas
 Ask before changing:
@@ -937,7 +947,7 @@ Not run:
 
 ### Decisions
 
-### Needs human decision
+### Needs human input
 
 ### Next
 ```
@@ -1006,7 +1016,7 @@ Superseded by: none
 
 ## Blockers
 
-## Needs human decision
+## Needs human input
 
 ## Validation
 Passed:
@@ -1312,6 +1322,7 @@ Check correctness, scope, validation evidence, UX edge states, accessibility, vi
 Return one of:
 - ready;
 - needs revision;
+- blocked;
 - blocked by missing user input.
 
 If blocked by missing user input, name the missing input and the natural question to ask.
@@ -1331,7 +1342,7 @@ Update HANDOFF.md with current focus, last completed work, next action, blockers
 
 Include missing human input separately from routine next action when applicable. If next work is blocked by missing user input, make that clear.
 
-Then report work performed, validation status, state updated, decisions, human decisions needed, and next action.
+Then report work performed, validation status, state updated, decisions, human input needed, and next action.
 ```
 
 ---
@@ -1353,7 +1364,7 @@ Then report work performed, validation status, state updated, decisions, human d
 
 ## Blocked
 
-## Needs human decision
+## Needs human input
 
 ## Recent decisions
 
@@ -1381,7 +1392,7 @@ Recommended fields:
 - recently completed work;
 - active work;
 - blockers;
-- human decisions needed;
+- human input needed;
 - recent decisions;
 - validation status;
 - next three actions;

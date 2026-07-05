@@ -166,7 +166,7 @@ Not run:
 
 ### Decisions
 
-### Needs human decision
+### Needs human input
 
 ### Next
 EOF
@@ -273,7 +273,7 @@ Fill `CURRENT_STATE.md` with repository evidence and choose the next meaningful 
 
 Unknown.
 
-## Needs human decision
+## Needs human input
 
 - Confirm project goal, non-goals, and immediate next task.
 

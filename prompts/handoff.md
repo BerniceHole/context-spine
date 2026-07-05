@@ -21,5 +21,5 @@ Then produce a short final report for the human:
 - what was verified;
 - what was not verified;
 - what state documents changed;
-- what decision is needed next, if any.
+- what human input is needed next, if any.
 ```

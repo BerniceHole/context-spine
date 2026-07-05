@@ -106,7 +106,8 @@ context-spine/
 ├─ examples/
 │  └─ design-token-export-trace.md
 └─ scripts/
-   └─ init-context-spine.sh
+   ├─ init-context-spine.sh
+   └─ spine-doctor
 ```
 
 ## The Spine Four
@@ -118,6 +119,22 @@ context-spine/
 `ai-state/DECISIONS.md` is append-only rationale. It records decisions, context, consequences, alternatives, and supersession.
 
 `ai-state/HANDOFF.md` is next-session survival. It records current focus, last completed work, next action, blockers, human decisions needed, validation, and notes for the next session.
+
+## Optional doctor check
+
+`scripts/spine-doctor` can check a project using Context Spine:
+
+```sh
+python3 scripts/spine-doctor /path/to/project
+```
+
+It catches missing files, missing required sections, missing validation headings, line-count bloat, and likely stale state. It is mechanical hygiene, not a replacement for human review. Passing the doctor does not prove the project is correct, and warnings are not proof of failure.
+
+One-off remote use:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/BerniceHole/context-spine/main/scripts/spine-doctor | python3 - /path/to/project
+```
 
 ## When to add more
 

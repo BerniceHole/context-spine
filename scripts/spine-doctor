@@ -1,0 +1,183 @@
+#!/usr/bin/env python3
+"""Optional Context Spine verifier."""
+
+from __future__ import annotations
+
+import argparse
+import subprocess
+import sys
+from pathlib import Path
+
+
+REQUIRED_FILES = [
+    "AGENTS.md",
+    "ai-state/CURRENT_STATE.md",
+    "ai-state/DECISIONS.md",
+    "ai-state/HANDOFF.md",
+]
+
+REQUIRED_SECTIONS = {
+    "AGENTS.md": [
+        "AGENTS.md",
+        "Purpose",
+        "Read order",
+        "Working rules",
+        "Hard-stop areas",
+        "Validation",
+        "Doc-sync",
+        "Final report",
+        "Work performed",
+        "Files changed",
+        "Validated",
+        "State updated",
+        "Decisions",
+        "Needs human input",
+        "Next",
+    ],
+    "ai-state/CURRENT_STATE.md": [
+        "Current State",
+        "One-line summary",
+        "Current product behavior",
+        "Current architecture",
+        "Implemented",
+        "Intentionally not implemented",
+        "Active constraints",
+        "Known risks",
+        "Last verified",
+        "Related decisions",
+    ],
+    "ai-state/DECISIONS.md": [
+        "Decisions",
+        "Context",
+        "Decision",
+        "Consequences",
+        "Alternatives considered",
+    ],
+    "ai-state/HANDOFF.md": [
+        "Handoff",
+        "Current focus",
+        "Last completed",
+        "Next action",
+        "Blockers",
+        "Needs human input",
+        "Validation",
+        "Files or areas touched",
+        "Notes for next session",
+    ],
+}
+
+LINE_WARNINGS = {
+    "AGENTS.md": 220,
+    "ai-state/CURRENT_STATE.md": 120,
+    "ai-state/HANDOFF.md": 100,
+}
+
+STALE_COMMIT_WARNING = 10
+
+
+def read_text(path: Path) -> str:
+    return path.read_text(encoding="utf-8")
+
+
+def line_count(text: str) -> int:
+    if not text:
+        return 0
+    return text.count("\n") + (0 if text.endswith("\n") else 1)
+
+
+def has_heading(text: str, heading: str) -> bool:
+    prefixes = ("# ", "## ", "### ", "#### ", "##### ", "###### ")
+    return any(line.strip() == f"{prefix}{heading}" for line in text.splitlines() for prefix in prefixes)
+
+
+def git(target: Path, args: list[str]) -> tuple[int, str]:
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(target), *args],
+            check=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+    except FileNotFoundError:
+        return 127, ""
+    return result.returncode, result.stdout.strip()
+
+
+def check_git_staleness(target: Path, findings: list[str]) -> None:
+    code, _ = git(target, ["rev-parse", "--is-inside-work-tree"])
+    if code == 127:
+        findings.append("INFO: git unavailable; skipped stale-state check")
+        return
+    if code != 0:
+        findings.append("INFO: target is not a git repository; skipped stale-state check")
+        return
+
+    for rel in ("ai-state/CURRENT_STATE.md", "ai-state/HANDOFF.md"):
+        code, commit = git(target, ["log", "-1", "--format=%H", "--", rel])
+        if code != 0 or not commit:
+            findings.append(f"INFO: no git history for {rel}; skipped stale-state check")
+            continue
+        code, count = git(target, ["rev-list", "--count", f"{commit}..HEAD"])
+        if code != 0 or not count.isdigit():
+            findings.append(f"INFO: could not compare git history for {rel}; skipped stale-state check")
+            continue
+        behind = int(count)
+        if behind > STALE_COMMIT_WARNING:
+            findings.append(f"WARN: {rel} last changed {behind} commits behind HEAD")
+
+
+def check_target(target: Path) -> tuple[list[str], list[str]]:
+    errors: list[str] = []
+    findings: list[str] = []
+
+    if not target.exists():
+        return [f"ERROR: target does not exist: {target}"], findings
+    if not target.is_dir():
+        return [f"ERROR: target is not a directory: {target}"], findings
+
+    missing = [rel for rel in REQUIRED_FILES if not (target / rel).is_file()]
+    if missing:
+        findings.append("INFO: target does not contain the full Context Spine minimum")
+        errors.extend(f"ERROR: missing required file: {rel}" for rel in missing)
+
+    for rel in REQUIRED_FILES:
+        path = target / rel
+        if not path.is_file():
+            continue
+        text = read_text(path)
+        for section in REQUIRED_SECTIONS.get(rel, []):
+            if not has_heading(text, section):
+                errors.append(f"ERROR: {rel} missing required section: {section}")
+        cap = LINE_WARNINGS.get(rel)
+        lines = line_count(text)
+        if cap and lines > cap:
+            findings.append(f"WARN: {rel} is {lines} lines; suggested cap is {cap}")
+
+    handoff = target / "ai-state/HANDOFF.md"
+    if handoff.is_file():
+        text = read_text(handoff)
+        for label in ("Passed:", "Failed:", "Not run:"):
+            if label not in text:
+                errors.append(f"ERROR: ai-state/HANDOFF.md missing validation heading: {label}")
+
+    check_git_staleness(target, findings)
+    if not errors:
+        findings.insert(0, "INFO: Context Spine doctor passed")
+    return errors, findings
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Check a project using Context Spine.")
+    parser.add_argument("target", nargs="?", default=".", help="project directory to check")
+    args = parser.parse_args()
+
+    target = Path(args.target).resolve()
+    errors, findings = check_target(target)
+    for line in errors + findings:
+        print(line)
+    return 1 if errors else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

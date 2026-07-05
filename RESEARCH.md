@@ -228,17 +228,19 @@ It should remain short and answer: the latest completed work, the current focus,
 
 Extension documents are not part of the default minimum. Add them only when a real failure mode appears.
 
-| **Artifact**                  | **Role**                  | **Add when**                                                        |
-| ----------------------------- | ------------------------- | ------------------------------------------------------------------- |
-| `ai-state/tasks/T-000X.md`    | Work order                | Tasks are ambiguous, risky, or multi-file.                          |
-| `ai-state/QUALITY_BAR.md`     | Repeatable quality rubric | Quality criteria are being forgotten or applied inconsistently.     |
-| `ai-state/PROJECT_CHARTER.md` | Durable project identity  | Mission, target users, non-goals, or principles need a stable home. |
-| `ai-state/STATUS.md`          | Human-facing status map   | Stakeholders need a shallow status view.                            |
-| `ai-state/PROGRESS_LOG.md`    | Append-only execution log | Auditability or recovery requires a historical record.              |
-| `ai-state/DRAFT.md`           | Disposable scratchpad     | Agents need a place to think without creating truth.                |
-| `.agents/skills/*/SKILL.md`   | Reusable procedure        | A manual workflow has stabilized and recurs often.                  |
+| **Artifact**                  | **Role**                  | **Add when**                                                        | **Removal path**                                                                  |
+| ----------------------------- | ------------------------- | ------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `ai-state/tasks/T-000X.md`    | Work order                | Tasks are ambiguous, risky, or multi-file.                          | Close or archive task; fold durable outcome into `CURRENT_STATE.md` or decisions. |
+| `ai-state/QUALITY_BAR.md`     | Repeatable quality rubric | Quality criteria are being forgotten or applied inconsistently.     | Fold stable criteria into `AGENTS.md` or domain docs; remove obsolete criteria.   |
+| `ai-state/PROJECT_CHARTER.md` | Durable project identity  | Mission, target users, non-goals, or principles need a stable home. | Fold stable identity into product docs or README; keep durable changes in decisions. |
+| `ai-state/STATUS.md`          | Human-facing status map   | Stakeholders need a shallow status view.                            | Remove when unused; fold current public status into `HANDOFF.md` if needed.       |
+| `ai-state/PROGRESS_LOG.md`    | Append-only execution log | Auditability or recovery requires a historical record.              | Archive when audit history is no longer useful.                                   |
+| `ai-state/DRAFT.md`           | Disposable scratchpad     | Agents need a place to think without creating truth.                | Delete after promoted facts move into real state documents.                       |
+| `.agents/skills/*/SKILL.md`   | Reusable procedure        | A manual workflow has stabilized and recurs often.                  | Remove when the procedure no longer recurs or prevents a named failure.           |
 
 `DRAFT.md` is never a source of truth. It may support thinking, but it cannot authorize implementation.
+
+Retiring an artifact is a decision: record the removal and where durable information moved.
 
 ---
 
@@ -517,6 +519,8 @@ Minimum checks:
 - Sensitive data has not been copied into state documents.
 
 The point is not to make documentation heavy. The point is to make false state visible.
+
+Mechanical checks can catch missing sections, missing validation headings, line-count bloat, and likely stale state. These checks are design principles and working hypotheses, not measured proof of effectiveness. Automation must not become a second source of truth: passing a check does not prove project state is correct.
 
 ---
 

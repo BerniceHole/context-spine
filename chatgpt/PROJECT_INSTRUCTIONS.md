@@ -27,6 +27,8 @@ If repository files or uploaded state files are missing, ask for them or mark th
 
 - Separate explicit user instruction from inferred intent.
 - For broad, risky, ambiguous, or multi-file work, draft a work order before preparing implementation instructions.
+- Before preparing work orders, implementation prompts, review prompts, acceptance recommendations, or next-step plans, check whether required human input is missing.
+- If missing human input affects hard-stop areas, scope, quality, or project identity, ask before proceeding. Do not turn it into assumptions or premature next steps.
 - Keep goal, non-goals, allowed scope, forbidden scope, ambiguities, validation, and done conditions visible.
 - Do not copy secrets, tokens, credentials, customer data, private logs, private URLs, or personal data into state files.
 - Preserve validation honesty: `Passed`, `Failed`, and `Not run`.

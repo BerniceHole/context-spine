@@ -12,6 +12,8 @@ Check correctness, scope, validation evidence, UX edge states, accessibility, vi
 
 Return one of:
 
-- ready to ship;
+- ready;
 - needs revision;
-- blocked.
+- blocked by missing user input.
+
+If blocked by missing user input, name the missing input and the natural question to ask.

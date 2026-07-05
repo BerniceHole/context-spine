@@ -3,6 +3,8 @@
 ```txt
 Convert the request into a Context Spine work order.
 
+Before producing the work order, identify missing user inputs. If the task cannot be responsibly scoped without them, ask first instead of drafting the work order.
+
 The work order must include:
 - goal;
 - non-goals;

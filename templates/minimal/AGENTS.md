@@ -25,6 +25,10 @@ Context Spine adds a small operating layer for project state, decisions, handoff
 - Do not rely on tool memory or auto-memory for required project rules.
 - Do not copy secrets, credentials, customer data, private logs, private URLs, or personal data into state files.
 - Do not redesign the target project’s docs, roadmap, architecture, design system, brand system, or domain model unless explicitly asked.
+- Before preparing next operational steps, check whether required human input is missing.
+- Human input may be intent, source material, constraints, preferences, priorities, research direction, acceptance criteria, scope boundary, files, examples, or a decision.
+- If missing input affects hard-stop areas, scope, quality, or project identity, ask before proceeding.
+- Do not turn missing input into assumptions or premature next steps.
 
 ## Hard-stop areas
 

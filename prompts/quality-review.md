@@ -17,8 +17,9 @@ Check:
 - state document accuracy.
 
 Return:
-- ready to ship / needs revision / blocked;
+- ready / needs revision / blocked by missing user input;
 - reasons;
 - specific required changes;
+- if blocked by missing user input, the missing input and the natural question to ask;
 - what should not be changed further.
 ```

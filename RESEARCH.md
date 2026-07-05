@@ -333,7 +333,17 @@ Capture the user’s request. Separate explicit instruction from inferred intent
 
 If the request is small and low-risk, the agent may proceed with the minimal core. If the request is broad, ambiguous, or risky, it should create a work order before implementation.
 
-### 9.2 State restoration
+### 9.2 Input readiness
+
+Before producing a work order, implementation prompt, review prompt, acceptance recommendation, or next-step plan, the agent should check whether required human input is missing.
+
+Human input is broader than approval. It may include a decision, intent, source material, constraints, preferences, priorities, research direction, acceptance criteria, scope boundary, files, examples, references, or open-ended direction.
+
+If missing input affects scope, quality, hard-stop areas, or project identity, the agent should ask before proceeding. It should not convert missing input into assumptions, forced choices, or premature next steps.
+
+Review-only work may continue only when it directly helps the human provide the missing input.
+
+### 9.3 State restoration
 
 Read selectively in this order:
 
@@ -346,29 +356,29 @@ Read selectively in this order:
 
 Do not read every historical document by default. State restoration should be targeted, not ceremonial.
 
-### 9.3 Work-order gate
+### 9.4 Work-order gate
 
 If the agent cannot state the goal, non-goals, allowed scope, forbidden scope, ambiguities, validation, and completion conditions, it should not start broad implementation.
 
-### 9.4 Plan
+### 9.5 Plan
 
 State the plan before making broad changes. Identify likely files, validations to run, and decisions that may need human input.
 
 For implementation tasks, prefer small diffs and visible checkpoints.
 
-### 9.5 Execute
+### 9.6 Execute
 
 Work inside the declared scope. Avoid opportunistic refactors unless the work order allows them.
 
 If the agent discovers a necessary change outside scope, it must pause and request scope expansion.
 
-### 9.6 Validate
+### 9.7 Validate
 
 Run the validations defined in the work order or `AGENTS.md`.
 
 If a validation cannot be run, record it as **Not run** with the reason. Never report a validation as passed unless it actually ran and passed.
 
-### 9.7 Synchronize state
+### 9.8 Synchronize state
 
 Update the minimum necessary state documents.
 
@@ -379,7 +389,7 @@ Update the minimum necessary state documents.
 - Update `STATUS.md` if stakeholders need a visible change.
 - Append to `PROGRESS_LOG.md` only when audit history is useful.
 
-### 9.8 Report
+### 9.9 Report
 
 The final report should include work performed, validations, state updates, decisions, human decisions needed, and next action.
 
@@ -1237,6 +1247,8 @@ description: Convert a broad or risky request into a bounded Context Spine work 
 
 Use when a request is ambiguous, risky, multi-file, or likely to affect durable state.
 
+Before producing the work order, identify missing user inputs. If the task cannot be responsibly scoped without them, ask first instead of drafting the work order.
+
 Output a task file with goal, non-goals, scope, ambiguities, validation, done conditions, and expected state impact.
 
 Do not implement during this skill unless explicitly instructed.
@@ -1298,9 +1310,11 @@ Use a fresh review posture.
 Check correctness, scope, validation evidence, UX edge states, accessibility, visual or brand consistency, localization risk, source quality, and state accuracy as relevant.
 
 Return one of:
-- ready to ship;
+- ready;
 - needs revision;
-- blocked.
+- blocked by missing user input.
+
+If blocked by missing user input, name the missing input and the natural question to ask.
 ```
 
 ### `handoff-report/SKILL.md`
@@ -1313,7 +1327,9 @@ description: Update HANDOFF.md and produce the final human-readable report.
 
 # Handoff Report
 
-Update HANDOFF.md with current focus, last completed work, next action, blockers, human decisions, validation, files touched, and notes.
+Update HANDOFF.md with current focus, last completed work, next action, blockers, human decisions, missing human input, validation, files touched, and notes.
+
+Include missing human input separately from routine next action when applicable. If next work is blocked by missing user input, make that clear.
 
 Then report work performed, validation status, state updated, decisions, human decisions needed, and next action.
 ```

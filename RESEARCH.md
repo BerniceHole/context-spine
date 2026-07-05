@@ -967,9 +967,9 @@ Not run:
 
 ## D-0001: Use inline export preview
 
-Date: YYYY-MM-DD
-Status: Proposed | Accepted | Superseded | Rejected
-Supersedes: none
+Date: YYYY-MM-DD  
+Status: Proposed | Accepted | Superseded | Rejected  
+Supersedes: none  
 Superseded by: none
 
 ### Context
@@ -1069,9 +1069,9 @@ Expected updates:
 ```other
 # Validation Log
 
-Task: T-0000
-Date: YYYY-MM-DD
-Agent/session:
+Task: T-0000  
+Date: YYYY-MM-DD  
+Agent/session:  
 Commit/branch:
 
 ## Passed
@@ -1347,6 +1347,47 @@ Then report work performed, validation status, state updated, decisions, human d
 ```
 
 A status surface should be a projection of state, not a second source of truth.
+
+---
+
+### Shared Web Status Surface
+
+A shared web status surface is optional. It exists for humans who need to understand project state without reading the full repository.
+
+It should be generated from checked-in Context Spine artifacts, usually `ai-state/STATUS.md`, `ai-state/CURRENT_STATE.md`, `ai-state/HANDOFF.md`, selected recent decisions from `ai-state/DECISIONS.md`, and active work orders.
+
+The web surface is not a source of truth. It is a projection.
+
+Recommended fields:
+
+- one-line project status;
+- current milestone;
+- recently completed work;
+- active work;
+- blockers;
+- human decisions needed;
+- recent decisions;
+- validation status;
+- next three actions;
+- source revision or generated-from commit;
+- last generated or last updated time;
+- links to relevant tasks, decisions, branches, pull requests, or artifacts.
+
+Recommended publishing options:
+
+- GitHub Pages for public or open-source repositories;
+- Vercel, Netlify, or Cloudflare Pages for private static dashboards;
+- an internal docs site for team-only access;
+- a local preview for solo projects that do not need sharing.
+
+Rules:
+
+- Do not expose secrets, private customer data, internal commercial terms, unreleased metrics, or sensitive screenshots.
+- If the dashboard is public, assume every word is externally visible.
+- If stakeholder status changes, update `ai-state/STATUS.md` or the generated status source during doc-sync.
+- If the dashboard contradicts `ai-state/CURRENT_STATE.md`, the dashboard is wrong.
+- If the dashboard cannot be kept fresh, remove it or mark it stale.
+- The dashboard must not authorize implementation, product, design, legal, or business decisions. Decisions belong in checked-in state documents.
 
 ---
 

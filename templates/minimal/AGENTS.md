@@ -29,6 +29,8 @@ Context Spine adds a small operating layer for project state, decisions, handoff
 - Human input may be intent, source material, constraints, preferences, priorities, research direction, acceptance criteria, scope boundary, files, examples, or a decision.
 - If missing input affects hard-stop areas, scope, quality, or project identity, ask before proceeding.
 - Do not turn missing input into assumptions or premature next steps.
+- Surface missing input, material risks, or better sequencing when relevant.
+- Do not expand scope or implement suggestions without explicit approval.
 
 ## Hard-stop areas
 

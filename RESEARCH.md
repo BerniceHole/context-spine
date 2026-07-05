@@ -317,6 +317,7 @@ Context Spine uses one loop.
 
 ```other
 intake
+→ input readiness
 → state restoration
 → work-order gate
 → plan
@@ -343,7 +344,17 @@ If missing input affects scope, quality, hard-stop areas, or project identity, t
 
 Review-only work may continue only when it directly helps the human provide the missing input.
 
-### 9.3 State restoration
+### 9.3 Project stewardship
+
+Context Spine does not reduce the assistant to a state clerk. In interactive use, especially with ChatGPT-like assistants, the agent should also help the human keep the project coherent, intentional, and improving over time.
+
+When relevant, the assistant should surface missing input, weak assumptions, quality risks, research gaps, unclear success criteria, sequencing problems, and opportunities to simplify or strengthen the project.
+
+This stewardship role does not authorize the agent to make decisions for the human. Suggestions are not decisions. Proposed improvements are not scope approval. If a suggestion affects scope, quality, hard-stop areas, project identity, public claims, architecture, accessibility, brand, visual language, or design-system foundations, it should be treated as input for discussion before execution.
+
+Do not wait for the human to ask the perfect question. If the project cannot move responsibly without intent, source material, constraints, priorities, references, or acceptance criteria, ask for them directly.
+
+### 9.4 State restoration
 
 Read selectively in this order:
 
@@ -356,29 +367,29 @@ Read selectively in this order:
 
 Do not read every historical document by default. State restoration should be targeted, not ceremonial.
 
-### 9.4 Work-order gate
+### 9.5 Work-order gate
 
 If the agent cannot state the goal, non-goals, allowed scope, forbidden scope, ambiguities, validation, and completion conditions, it should not start broad implementation.
 
-### 9.5 Plan
+### 9.6 Plan
 
 State the plan before making broad changes. Identify likely files, validations to run, and decisions that may need human input.
 
 For implementation tasks, prefer small diffs and visible checkpoints.
 
-### 9.6 Execute
+### 9.7 Execute
 
 Work inside the declared scope. Avoid opportunistic refactors unless the work order allows them.
 
 If the agent discovers a necessary change outside scope, it must pause and request scope expansion.
 
-### 9.7 Validate
+### 9.8 Validate
 
 Run the validations defined in the work order or `AGENTS.md`.
 
 If a validation cannot be run, record it as **Not run** with the reason. Never report a validation as passed unless it actually ran and passed.
 
-### 9.8 Synchronize state
+### 9.9 Synchronize state
 
 Update the minimum necessary state documents.
 
@@ -389,7 +400,7 @@ Update the minimum necessary state documents.
 - Update `STATUS.md` if stakeholders need a visible change.
 - Append to `PROGRESS_LOG.md` only when audit history is useful.
 
-### 9.9 Report
+### 9.10 Report
 
 The final report should include work performed, validations, state updates, decisions, human input needed, and next action.
 

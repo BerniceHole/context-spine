@@ -41,14 +41,14 @@ For an existing project:
 
 ```txt
 Apply Context Spine to this existing project using https://github.com/BerniceHole/context-spine.
-Set up only the Spine Four. Inspect the repo first. Do not implement features. Do not copy secrets or private data. Use Unknown where evidence is missing. Report files changed and validation as Passed, Failed, or Not run.
+Treat Context Spine as a small operating layer, not a replacement for the product structure, documentation architecture, design system, roadmap, information architecture, brand system, or domain model. Set up only the Spine Four. Inspect the repo first. Do not implement features. Do not copy secrets or private data. Use Unknown where evidence is missing. Report files changed and validation as Passed, Failed, or Not run.
 ```
 
 For a new project:
 
 ```txt
 Start this new project with Context Spine using https://github.com/BerniceHole/context-spine.
-Create the smallest useful project state: AGENTS.md and ai-state/CURRENT_STATE.md, DECISIONS.md, HANDOFF.md. Keep placeholders short. Do not add optional docs unless a real repeated failure justifies them. Ask before making product or architecture assumptions.
+Create minimal operating state only: AGENTS.md and ai-state/CURRENT_STATE.md, DECISIONS.md, HANDOFF.md. Do not design the product structure, docs tree, roadmap, architecture, design system, brand system, information architecture, or domain model unless explicitly asked. Keep placeholders short. Do not add optional docs unless a real repeated failure justifies them. Ask before making product or architecture assumptions.
 ```
 
 ### Use with ChatGPT or Codex
@@ -58,6 +58,19 @@ Codex reads the target repo’s root `AGENTS.md`.
 For ChatGPT Projects, paste or adapt [`chatgpt/PROJECT_INSTRUCTIONS.md`](chatgpt/PROJECT_INSTRUCTIONS.md), then use [`chatgpt/RESUME_PROMPT.md`](chatgpt/RESUME_PROMPT.md) to resume fresh sessions.
 
 For the full rationale and research context, see [`RESEARCH.md`](RESEARCH.md).
+
+## What applying Context Spine means
+
+Applying Context Spine means adding a small operating layer to a project:
+
+- agent instructions;
+- current project state;
+- durable decisions;
+- next-session handoff.
+
+It does not replace the target project’s product structure, documentation architecture, design system, roadmap, information architecture, brand system, or domain model.
+
+When an agent is asked to apply Context Spine, it should inspect the target project first, install or update only the Spine Four by default, use `Unknown` where evidence is missing, and ask before making project-specific assumptions.
 
 ## Repository contents
 

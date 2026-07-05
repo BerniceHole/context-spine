@@ -82,6 +82,8 @@ if ! copy_or_write "${TEMPLATE_DIR}/AGENTS.md" "${TARGET_ABS}/AGENTS.md" "local 
 
 This repository uses Context Spine. The repository state, not chat history, is the source of truth.
 
+Context Spine adds a small operating layer for project state, decisions, handoff, validation, and agent behavior. It does not replace the target project’s product structure, documentation architecture, design system, roadmap, information architecture, brand system, or domain model.
+
 ## Read order
 
 1. `ai-state/HANDOFF.md`
@@ -100,6 +102,7 @@ This repository uses Context Spine. The repository state, not chat history, is t
 - Do not treat draft or scratch files as source of truth.
 - Do not rely on tool memory or auto-memory for required project rules.
 - Do not copy secrets, credentials, customer data, private logs, private URLs, or personal data into state files.
+- Do not redesign the target project’s docs, roadmap, architecture, design system, brand system, or domain model unless explicitly asked.
 
 ## Hard-stop areas
 

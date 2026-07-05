@@ -1,0 +1,16 @@
+# OS/editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Private Context Spine notes, if a target project chooses to add them
+ai-state/private/
+
+# Local packaging output
+*.zip

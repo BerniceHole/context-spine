@@ -2,8 +2,10 @@
 
 Task: T-0000
 Date: YYYY-MM-DD
-Agent/session:
-Commit/branch:
+Actor/task/run:
+Execution surface and host:
+Canonical revision or snapshot:
+Commit/branch/worktree:
 
 ## Passed
 
@@ -20,3 +22,5 @@ Commit/branch:
 ## Notes
 
 Do not infer that `Not run` means `Passed`.
+
+External effects observed or produced:

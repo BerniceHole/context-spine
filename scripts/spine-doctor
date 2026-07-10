@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -62,9 +63,36 @@ REQUIRED_SECTIONS = {
         "Needs human input",
         "Validation",
         "Files or areas touched",
-        "Notes for next session",
     ],
 }
+
+V2_REQUIRED_SECTIONS = {
+    "AGENTS.md": [
+        "Execution context",
+        "External effects",
+    ],
+    "ai-state/CURRENT_STATE.md": [
+        "Canonical project identity",
+        "External state and source freshness",
+        "Automation profile",
+    ],
+    "ai-state/HANDOFF.md": [
+        "Continuity context",
+        "Authority and write ownership",
+        "External side effects",
+        "Notes for next continuation",
+    ],
+}
+
+PROTOCOL_VERSION_RE = re.compile(r"^Protocol version:\s*(\d+)\s*$", re.MULTILINE)
+ACTIVE_TASK_RE = re.compile(r"^- Active task or run:\s*(.+?)\s*$", re.MULTILINE)
+AUTOMATION_PROFILE_RE = re.compile(
+    r"^## Automation profile\s*$\n(?P<body>.*?)(?=^## |\Z)",
+    re.MULTILINE | re.DOTALL,
+)
+AUTOMATION_MODE_RE = re.compile(
+    r"^(?:[-*]\s*)?(?:Mode:\s*)?(Manual|Read-only|Bounded-write)(?:\s*(?:—|-|:)\s*.*)?$"
+)
 
 LINE_WARNINGS = {
     "AGENTS.md": 220,
@@ -88,6 +116,54 @@ def line_count(text: str) -> int:
 def has_heading(text: str, heading: str) -> bool:
     prefixes = ("# ", "## ", "### ", "#### ", "##### ", "###### ")
     return any(line.strip() == f"{prefix}{heading}" for line in text.splitlines() for prefix in prefixes)
+
+
+def file_protocol_version(path: Path) -> int | None:
+    if not path.is_file():
+        return None
+    match = PROTOCOL_VERSION_RE.search(read_text(path))
+    return int(match.group(1)) if match else None
+
+
+def check_v2_contract(target: Path, errors: list[str], findings: list[str]) -> None:
+    for rel, sections in V2_REQUIRED_SECTIONS.items():
+        path = target / rel
+        if not path.is_file():
+            continue
+        text = read_text(path)
+        for section in sections:
+            if not has_heading(text, section):
+                errors.append(f"ERROR: {rel} missing v2 required section: {section}")
+
+    current = target / "ai-state/CURRENT_STATE.md"
+    if current.is_file():
+        text = read_text(current)
+        profile = AUTOMATION_PROFILE_RE.search(text)
+        lines = [] if profile is None else [line.strip() for line in profile.group("body").splitlines() if line.strip()]
+        if not lines or not AUTOMATION_MODE_RE.fullmatch(lines[0]):
+            errors.append("ERROR: ai-state/CURRENT_STATE.md missing automation profile mode")
+
+    handoff = target / "ai-state/HANDOFF.md"
+    if handoff.is_file():
+        text = read_text(handoff)
+        match = ACTIVE_TASK_RE.search(text)
+        if not match:
+            errors.append("ERROR: ai-state/HANDOFF.md missing active task or run field")
+        else:
+            value = match.group(1).strip().strip("`")
+            if value not in {"None", "Unknown", "None.", "Unknown."} and value.endswith(".md"):
+                task = target / value
+                if not task.is_file():
+                    findings.append(f"WARN: active task or run path does not exist: {value}")
+
+        for field in (
+            "Revision, branch, or snapshot:",
+            "Surface and execution host:",
+            "Authority source and status:",
+            "Active state writer or integrator:",
+        ):
+            if field not in text:
+                errors.append(f"ERROR: ai-state/HANDOFF.md missing v2 field: {field}")
 
 
 def git(target: Path, args: list[str]) -> tuple[int, str]:
@@ -154,9 +230,37 @@ def check_target(target: Path) -> tuple[list[str], list[str]]:
         if cap and lines > cap:
             findings.append(f"WARN: {rel} is {lines} lines; suggested cap is {cap}")
 
+    versioned_files = (
+        "AGENTS.md",
+        "ai-state/CURRENT_STATE.md",
+        "ai-state/HANDOFF.md",
+    )
+    versions = {rel: file_protocol_version(target / rel) for rel in versioned_files}
+    version = versions["AGENTS.md"]
+    if version is None:
+        declared_elsewhere = {rel: value for rel, value in versions.items() if value is not None}
+        if declared_elsewhere:
+            errors.append("ERROR: AGENTS.md missing protocol version while state files declare one")
+        else:
+            findings.append("WARN: Protocol version marker missing; treating target as v1 and recommending a v2 review")
+    elif version == 2:
+        for rel in versioned_files[1:]:
+            path = target / rel
+            if path.is_file() and versions[rel] != 2:
+                actual = "missing" if versions[rel] is None else str(versions[rel])
+                errors.append(f"ERROR: {rel} protocol version is {actual}; expected 2")
+        check_v2_contract(target, errors, findings)
+    else:
+        errors.append(f"ERROR: unsupported Context Spine protocol version: {version}")
+
     handoff = target / "ai-state/HANDOFF.md"
     if handoff.is_file():
         text = read_text(handoff)
+        if not (
+            has_heading(text, "Notes for next session")
+            or has_heading(text, "Notes for next continuation")
+        ):
+            errors.append("ERROR: ai-state/HANDOFF.md missing continuation notes section")
         for label in ("Passed:", "Failed:", "Not run:"):
             if label not in text:
                 errors.append(f"ERROR: ai-state/HANDOFF.md missing validation heading: {label}")

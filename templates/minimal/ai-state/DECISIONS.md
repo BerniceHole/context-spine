@@ -11,7 +11,7 @@ Superseded by: none
 
 ### Context
 
-The project is adopting Context Spine so future AI sessions can recover project state from repository files instead of chat history.
+The project is adopting Context Spine so work can recover canonical state across task, agent, surface, host, context, and automation boundaries instead of relying on conversation history alone.
 
 ### Decision
 
@@ -25,6 +25,9 @@ Use the Spine Four as the minimal starting structure:
 ### Consequences
 
 - State documents must stay short, current, and operational.
+- Task authority, execution evidence, and continuity checkpoints must remain tied to the current project revision.
+- Automation defaults to `Manual`; unattended work requires a task-specific authority envelope.
+- A handoff records authority but does not create, broaden, or renew it.
 - Optional documents should be added only when they prevent a repeated failure.
 - Validation must be reported as `Passed`, `Failed`, or `Not run`.
 

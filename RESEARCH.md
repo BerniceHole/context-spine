@@ -1,185 +1,261 @@
 # Context Spine
 
-## A State-Centric Workflow Specification for Human–AI Project Work
+## A State-and-Authority Workflow Specification for Human–AI Project Work
+
+Version: 2
+Specification status: Design specification and reference implementation
+Effectiveness status: Working hypotheses that require local evaluation
 
 ---
 
 ## Abstract
 
-Context Spine is a state-centric workflow specification for long-running human–AI project work, with web and software development as its primary operating domain and product, design, research, brand, and content work as extension domains.
+Context Spine v2 is a state-and-authority workflow specification for long-running human–AI project work. Its default operating profile is repository-based software work, with product, design, research, brand, content, and non-repository knowledge work as extension domains.
 
-The central failure in long-running AI collaboration is not merely limited model memory. The deeper failure is that project state is often implicit, scattered, stale, or mixed with conversation history. Current decisions, superseded plans, draft ideas, validation results, implementation notes, and user intent frequently collapse into the same surface. When a new AI session begins, the agent is then asked to continue a project whose state is no longer mechanically recoverable.
+The central failure in long-running AI collaboration is not merely limited model memory. The deeper failure is that canonical state, task scope, execution authority, source freshness, validation evidence, and continuation state are often implicit, scattered, stale, or mixed with conversation history. Stronger models can act across more tools, sources, agents, and hosts for longer periods; that increases both productive reach and the cost of an incorrect assumption.
 
-Context Spine externalizes project memory into a small set of checked-in, role-specific artifacts: an agent operating contract, current-state document, decision log, handoff document, work orders, validation records, and optional reusable skills. It treats state restoration, scope control, validation, documentation synchronization, and handoff as part of the work itself.
+Context Spine externalizes the minimum required project control surface into five layers: canonical state, task contract, authority envelope, execution evidence, and continuity checkpoint. Its default Spine Four remain an agent operating contract, current-state document, decision log, and handoff document. Work orders, validation logs, quality bars, status views, progress logs, and reusable skills remain optional.
 
-The method does not claim that more documentation automatically improves agent performance. It assumes the opposite risk: every additional context artifact is a cost unless it prevents a specific failure. Context Spine therefore starts with a minimal core and expands only when a recurring failure mode justifies the added structure.
+The method does not claim that more documentation or tighter prompting automatically improves agent performance. Every additional context artifact is a cost unless it prevents a specific failure. Context Spine therefore keeps the default file count small, separates stable protocol from dated product adapters, and expands only when a recurring failure mode justifies added structure.
 
 ---
 
 ## 1. Introduction
 
-Most AI-assisted projects begin as conversations. A human explains a goal, a general-purpose model helps plan it, and a coding agent implements parts of it. For short work, this is enough. For long-running work, the conversation becomes a weak container for state.
+Most AI-assisted projects begin with a conversation, but execution is no longer a simple handoff from a general-purpose planner to a separate coding agent. One task may move among Chat, ChatGPT Work, Codex, subagents, local folders, worktrees, cloud containers, connected apps, browsers, and scheduled runs. These surfaces may overlap in capability without sharing the same files, source revision, memory, credentials, permissions, or task state.
 
-The problem is not that an AI assistant cannot produce competent output. The problem is that the project may stop knowing what it is. A feature may be implemented against an older assumption. A draft idea may be treated as a decision. A decision may be remembered without the reason that made it valid. A validation may be implied without having been run. A human may know the original intention, while the repository reflects a chain of agent interpretations that nobody can reconstruct quickly.
+The problem is not that an AI assistant cannot produce competent output. The problem is that the project may stop knowing what is current, what was authorized, what actually ran, and where the next actor should continue. A feature may be implemented against an old uploaded snapshot. A draft idea may be treated as an accepted decision. Tool access may be mistaken for permission. Separate agents may write the same file. An external action may occur without a durable readback. A validation may be implied without having run on the integrated revision.
 
-Context Spine addresses this by moving durable project context out of chat and into a repository-level operating structure. The repository becomes the shared state surface for humans, ChatGPT, Codex, coding agents, and other AI agents. Chat may still be used for discussion, planning, critique, and generation, but it is not the source of truth.
+OpenAI's 2026 releases make this distinction more important, not less. OpenAI describes GPT-5.6 as stronger at tool-heavy work, introduces parallel-agent coordination in the `ultra` setting, and describes ChatGPT Work as able to operate across apps and files for hours. The GPT-5.6 System Card also reports that, in agentic coding evaluations, GPT-5.6 showed a greater tendency than GPT-5.5 to go beyond user intent, while absolute rates remained low. These are dated product facts, not proof that any particular workflow will fail or that Context Spine is effective.
 
-The purpose of Context Spine is not to make agents more autonomous. It is to make their autonomy bounded, inspectable, and recoverable.
+Context Spine addresses the control problem by designating a canonical project state surface and requiring each meaningful execution path to reconcile with it. In the default software profile, that surface is the checked-in repository plus accepted external-system readbacks. A non-repository project may designate another durable artifact store, but it must still identify provenance, revision or snapshot time, review status, and a sync-back owner.
+
+The purpose of Context Spine is not to maximize or minimize autonomy. It is to make the selected autonomy bounded, inspectable, evidence-bearing, and recoverable.
 
 ---
 
 ## 2. Problem Statement
 
-Long-running AI collaboration has several predictable failure modes.
+Long-running AI collaboration has predictable failure modes.
 
-### 2.1 Context loss
+### 2.1 Canonical state loss
 
-A new session rarely carries the full working memory of the old one. Summaries help, but compression often removes the reasons behind decisions. The agent may continue fluently while no longer continuing the same project.
+A conversation or task may persist while the project files or external systems change. The agent may continue fluently while acting on the wrong revision.
 
-### 2.2 State and history collapse
+### 2.2 State, history, and recall collapse
 
-Initial plans, superseded requirements, temporary explorations, implementation notes, and current decisions are often stored together. Humans may infer chronology from prose. Agents may treat older text as equally authoritative.
+Initial plans, superseded requirements, temporary explorations, task transcripts, generated memory, implementation notes, and accepted decisions are often stored together. Agents may treat old or advisory material as current authority.
 
-### 2.3 User situation loss
+### 2.3 Source and working-tree divergence
 
-When ChatGPT writes prompts for a coding agent, the coding agent modifies the project, and its result returns to ChatGPT, the human may remember the original intention but lose the transformation chain. Over time, the work can become a derivative of prompts rather than a controlled implementation of intent.
+Uploaded files, connected sources, a saved transcript, and the current working tree can represent different project moments. Resume may restore a conversation without restoring the old files.
 
-### 2.4 Unauthorized interpretation
+### 2.4 Authority ambiguity
 
-Agents tend to fill ambiguity with plausible assumptions. This is often acceptable in low-risk scaffolding and dangerous in authentication, billing, privacy, accessibility, data models, dependencies, brand direction, legal claims, and public-facing product behavior.
+Technical access to a file, command, browser, app, connector, account, or deployment target can be mistaken for authorization. A prior approval or handoff may be incorrectly assumed to remain valid.
 
-### 2.5 Quality regression to the mean
+### 2.5 Unauthorized interpretation
 
-Without explicit quality criteria, generated work tends toward generic correctness. It may run, but lack product judgment. It may look clean, but not intentional. It may mention accessibility, but not improve actual use. It may follow a design pattern without understanding why the pattern exists.
+Agents fill ambiguity with plausible assumptions. This is often harmless in reversible scaffolding and dangerous in authentication, billing, privacy, accessibility, data models, dependencies, brand direction, legal claims, publication, external communication, and destructive operations.
 
-### 2.6 Documentation rot
+### 2.6 Multi-agent write conflict
 
-Documentation can become another source of drift. A stale state document is worse than no state document because it gives the next session false confidence.
+Parallel agents can accelerate independent research, tests, and triage. They can also overwrite, duplicate, or invalidate one another's work when write ownership, isolation, and integration order are unclear.
+
+### 2.7 External side-effect invisibility
+
+A file diff does not reveal whether an agent sent a message, changed a connected system, created a deployment, changed a permission, incurred cost, or published an artifact.
+
+### 2.8 Unattended automation drift
+
+Scheduled and event-driven work may run without a fresh approval channel. A vague prompt, overlapping runs, or retry without idempotency can repeat mutations or continue after authority has expired.
+
+### 2.9 Quality regression to the mean
+
+Without explicit quality criteria, generated work tends toward generic correctness. It may run without reflecting product intent, actual accessibility, brand judgment, source quality, or domain risk.
+
+### 2.10 Documentation rot
+
+A stale state document is worse than no state document because it gives the next actor false confidence.
 
 ---
 
 ## 3. Related Work and Positioning
 
-Context Spine is a synthesis, not a claim of invention. It stands near several existing practices and agent-tooling patterns.
+Context Spine is a synthesis, not a claim of invention.
 
-[AGENTS.md](https://agents.md/) provides a predictable file format for guiding coding agents. The [OpenAI Codex AGENTS.md guide](https://developers.openai.com/codex/guides/agents-md) describes repository guidance through `AGENTS.md`, including discovery and layered project guidance. The format has also moved into broader open agent-infrastructure governance through the [Agentic AI Foundation](https://www.linuxfoundation.org/press/linux-foundation-announces-the-formation-of-the-agentic-ai-foundation). Context Spine uses `AGENTS.md` as the agent operating contract, not as a place to store the entire project narrative.
+[AGENTS.md](https://agents.md/) provides a predictable file format for guiding coding agents. The [OpenAI AGENTS.md guide](https://learn.chatgpt.com/docs/agent-configuration/agents-md) describes layered instruction discovery. Context Spine uses `AGENTS.md` as the operating contract, not as a place for the entire project narrative.
 
-[Agent Skills](https://agentskills.io/) define a lightweight open `SKILL.md` format for packaging specialized knowledge, workflows, scripts, references, and templates. [OpenAI Codex Skills](https://developers.openai.com/codex/skills) support the same progressive-disclosure pattern: the agent initially sees skill metadata and loads full skill instructions only when needed. Context Spine adopts this pattern for repeatable procedures such as context refresh, work-order creation, implementation loops, doc-sync, quality review, and handoff reporting.
+[Agent Skills](https://agentskills.io/) define a lightweight `SKILL.md` format for packaging specialized workflows and resources. [OpenAI Skills and Plugins](https://learn.chatgpt.com/docs/skills-and-plugins) use progressive disclosure for reusable procedures. Context Spine uses skills for stable repeated operations, not project facts.
 
-[OpenAI Codex Memories](https://developers.openai.com/codex/memories) are useful for local recall, but the Codex Memories documentation recommends keeping required team guidance in `AGENTS.md` or checked-in documentation. Context Spine follows that distinction: memories may help, but checked-in state documents are the shared truth.
+[OpenAI Memories](https://learn.chatgpt.com/docs/customization/memories) distinguishes ChatGPT web memory from local Codex memory and recommends keeping required team guidance in `AGENTS.md` or checked-in documentation. Context Spine follows that distinction: memory is a recall layer, not the only authority surface for required rules.
 
-[Claude Code memory](https://code.claude.com/docs/en/memory) provides a parallel convention through `CLAUDE.md`, `.claude/rules/*.md`, and auto memory. These files can carry persistent project context, but they are still loaded as context rather than guaranteed enforcement. Context Spine treats them as compatible instruction or recall surfaces, not replacements for checked-in state.
+[Architectural Decision Records](https://adr.github.io/), including [Michael Nygard's ADR pattern](https://www.cognitect.com/blog/2011/11/15/documenting-architecture-decisions) and [MADR](https://adr.github.io/madr/), provide the closest precedent for `DECISIONS.md`: choices should retain context, consequences, and supersession.
 
-[Architectural Decision Records](https://adr.github.io/), including [Michael Nygard’s ADR pattern](https://www.cognitect.com/blog/2011/11/15/documenting-architecture-decisions) and [MADR](https://adr.github.io/madr/), provide the closest precedent for `DECISIONS.md`: important choices should record context, rationale, consequences, and supersession rather than rewrite the past.
+[Diátaxis](https://diataxis.fr/) argues that documentation works better when forms serve distinct needs. Context Spine applies the same separation to current truth, decision history, task contracts, handoff, audit logs, drafts, and quality criteria.
 
-[Diátaxis](https://diataxis.fr/) argues that documentation works better when different user needs are served by different document forms. Context Spine uses Diátaxis as an analogy rather than a direct application of its original scope: current truth, decision history, handoff, progress log, draft thinking, and quality criteria are distinct state roles.
+[Cline Memory Bank](https://docs.cline.bot/best-practices/memory-bank), [GitHub Spec Kit](https://github.com/github/spec-kit), and [Kiro](https://aws.amazon.com/documentation-overview/kiro/) show the value of structured project context, specifications, and tasks. Context Spine adds a smaller default core, explicit authority, execution evidence, and continuity obligations.
 
-[Cline Memory Bank](https://docs.cline.bot/best-practices/memory-bank) and related memory-bank patterns show that structured markdown files can preserve project context across stateless agent sessions. Context Spine uses the same external-memory direction, while emphasizing a smaller minimal core, explicit authority boundaries, and completion by handoff.
+Anthropic's [long-running agent harness](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents) uses progress artifacts and Git history so fresh context can recover work. Its [context engineering guidance](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) treats context as a finite attention budget. Context Spine adopts both constraints.
 
-[GitHub Spec Kit](https://github.com/github/spec-kit) and [Kiro](https://aws.amazon.com/documentation-overview/kiro/) show the value of transforming natural-language intent into specifications, plans, and task lists before implementation. Context Spine uses work orders for similar scope control, while keeping session restoration and state synchronization as first-class obligations.
+[12-factor agents](https://github.com/humanlayer/12-factor-agents) are a close conceptual neighbor, especially owning the context window and unifying execution state with business state. Context Spine narrows that orientation into a project workflow protocol.
 
-Anthropic’s [long-running agent harness](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents) uses artifacts such as `claude-progress.txt` and git history so fresh context windows can recover the state of work. Its [context engineering guidance](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) also frames context as a finite attention budget that should contain the smallest useful set of high-signal tokens. Context Spine adopts the same constraint, but turns it into a repository-level state architecture.
+Research on repository context files, including [“Evaluating AGENTS.md: Are Repository-Level Context Files Helpful for Coding Agents?”](https://arxiv.org/abs/2602.11988), is a core threat model. The paper reports that context files did not generally improve task success in its setting and increased inference cost by over 20% on average. The benchmark is software- and Python-heavy and measures issue resolution rather than cross-boundary recovery, so the result is a constraint, not a universal conclusion. Context Spine responds by minimizing default context and requiring local evaluation.
 
-[12-factor agents](https://github.com/humanlayer/12-factor-agents) provide a close conceptual neighbor, especially the ideas of owning the context window, unifying execution state with business state, and treating the agent as a stateless reducer. Context Spine narrows that orientation into a workflow specification built around checked-in state artifacts.
+OpenAI's current product documentation separates operations that older workflows often collapse:
 
-Adjacent implementations include Cursor rules, Windsurf rules and memories, Aider conventions, and long-term memory architectures such as MemGPT and Letta. Context Spine does not depend on any of them, but they reflect the same pressure to make agent context explicit, inspectable, and bounded.
+- [Projects, chats, and tasks](https://learn.chatgpt.com/docs/projects) distinguishes ChatGPT projects, local projects, task transcripts, and current working trees.
+- [Codex environments](https://learn.chatgpt.com/docs/environments/modes) distinguishes local, worktree, and cloud execution.
+- [Subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents) recommends read-heavy parallelism first and warns about write-heavy coordination.
+- [Long-running work](https://learn.chatgpt.com/docs/long-running-work) makes outcome, constraints, and verification explicit.
+- [Scheduled tasks](https://learn.chatgpt.com/docs/automations) introduces unattended execution and different local, worktree, and web context boundaries.
+- [Agent approvals and security](https://learn.chatgpt.com/docs/agent-approvals-security) separates technical sandbox boundaries from approval routing.
 
-Research on repository-level context files, including [“Evaluating AGENTS.md: Are Repository-Level Context Files Helpful for Coding Agents?”](https://arxiv.org/abs/2602.11988) (arXiv:2602.11988), is a core threat model for Context Spine. The paper reports that context files did not generally improve task success compared with no repository context and increased inference cost by over 20% on average. Developer-written context files showed only modest average improvement in the paper’s AGENTbench setting, while LLM-generated context files tended to reduce performance; the benchmark is software- and Python-heavy, so the result should be treated as a strong constraint rather than a universal law. Context Spine responds by requiring context to be minimal, relevant, and operationally justified.
+The [ChatGPT Work launch](https://openai.com/index/chatgpt-for-your-most-ambitious-work/) and [GPT-5.6 launch](https://openai.com/index/gpt-5-6/), both dated 2026-07-09, document the capability shift motivating v2. The [GPT-5.6 System Card](https://deploymentsafety.openai.com/gpt-5-6) provides the relevant safety evaluation context.
 
-The study measures per-task issue resolution, not cross-session state recovery. Context Spine therefore treats per-task context-file overhead as an empirical threat model, while keeping cross-session recovery benefits as a working hypothesis to be measured locally.
-
-The differentiated claim is therefore narrow:
+The differentiated proposal is narrow:
 
 ```other
-current truth
+canonical state
 + decision history
-+ work-order gating
-+ validation evidence
-+ doc-sync
-+ session handoff
-= recoverable AI collaboration
++ task contract
++ authority envelope
++ execution evidence
++ continuity checkpoint
+= recoverable and bounded AI collaboration
 ```
 
-The distinctive move is not any single artifact. The distinctive move is making state restoration and state synchronization part of the definition of done.
-
-This overlaps with Cline’s memory-bank gates, Kiro’s steering/specs/tasks, Spec Kit’s constitution/spec flow, and Anthropic’s `claude-progress.txt` handoff pattern. Context Spine’s contribution is a sharper rearticulation and integration: a checked-in minimum set, failure-based expansion, work-order gating, validation evidence, and doc-sync as part of completion.
+The contribution is the integration, not any single artifact.
 
 ---
 
-## 4. Core Thesis
+## 4. Core Thesis and Claim Levels
 
-Context Spine is built on five claims.
+Context Spine v2 is built on eight design claims.
 
-First, conversation is not a durable state format.
+1. Conversation alone is not a sufficient canonical project-state format.
+2. Current truth and historical rationale are different kinds of information.
+3. Visibility is not authority; technical access does not by itself authorize mutation.
+4. Work crossing the work-order gate is not ready until scope, authority, validation, and done conditions are explicit and accepted.
+5. Transcript continuity, file continuity, and authority continuity are different.
+6. Independent reads can scale in parallel; overlapping writes require isolation or a single active writer and integration owner.
+7. Work is not complete until the final revision and external effects are validated, reconciled, and checkpointed.
+8. State should be small enough to read, structured enough to trust, and explicit enough to challenge.
 
-Second, current truth and historical explanation are different kinds of information and should not share the same document role.
+These are design principles, not universal empirical results.
 
-Third, a task is not ready for an agent until its goal, non-goals, scope, ambiguities, validation, and completion conditions are explicit.
+### 4.1 Claim levels
 
-Fourth, an AI task is not complete when output is produced. It is complete when the project state has been validated, synchronized, and handed off.
+| Level | Meaning | Example |
+| --- | --- | --- |
+| Design principle | A rule proposed by Context Spine | Capability is not authority. |
+| Tool fact | A dated behavior supported by a source | Codex can use `AGENTS.md` as project guidance. |
+| Working hypothesis | An expected effect that requires measurement | Authority envelopes reduce unauthorized mutations. |
+| Local result | Evidence from a specific project or team | Recovery errors fell during a three-week pilot. |
 
-Fifth, state should be small enough to read, structured enough to trust, and explicit enough to challenge.
-
-These are design principles, not universal empirical results. A team should measure whether they improve the local workflow before expanding the system.
-
----
-
-## 5. Claim Levels
-
-Context Spine separates four levels of claim. This distinction protects the document from sounding more certain than the evidence allows.
-
-| **Level**          | **Meaning**                                         | **Example**                                                   |
-| ------------------ | --------------------------------------------------- | ------------------------------------------------------------- |
-| Design principle   | A rule proposed by Context Spine                    | One document should have one job.                             |
-| Tool fact          | A behavior supported by a specific tool or standard | Codex can use `AGENTS.md` as project guidance.                |
-| Working hypothesis | An expected effect that must be measured locally    | Work orders reduce scope drift.                               |
-| Local result       | Evidence from a specific team or project            | New-session restoration time dropped after a four-week pilot. |
-
-Do not write a working hypothesis as if it were a local result. That is how a useful methodology becomes expensive folklore.
+Do not write a working hypothesis as a local result. Do not turn a vendor benchmark into a claim that the methodology works.
 
 ---
 
-## 6. System Model
+## 5. System Model
 
-Context Spine has three layers.
+Context Spine has five protocol layers.
 
-```other
-Context Spine
-├─ Core Protocol
-│  ├─ state restoration
-│  ├─ decision recording
-│  ├─ work-order gating
-│  ├─ validation
-│  ├─ doc-sync
-│  └─ handoff
-│
-├─ Extension Modules
-│  ├─ project charter
-│  ├─ quality bar
-│  ├─ stakeholder status
-│  ├─ progress log
-│  ├─ draft space
-│  └─ domain packs
-│
-└─ Automation Layer
-   ├─ skills
-   ├─ stale-state checks
-   ├─ status generation
-   ├─ validation scripts
-   └─ release gates
-```
+### 5.1 Canonical state
 
-The core protocol is tool-agnostic. It can be used with any agent that can read and update files.
+Answers what project state is authoritative and at which revision or snapshot.
 
-The extension modules are optional. They should be added only when the team has a repeated need for the extra role.
+Includes:
 
-The automation layer is not the source of truth. It helps enforce, generate, or review state, but it does not replace the state documents.
+- project identity and canonical surface;
+- current truth;
+- accepted decisions;
+- provenance and freshness of external sources;
+- the current automation profile.
+
+### 5.2 Task contract
+
+Answers what outcome governs the work.
+
+Includes:
+
+- goal and non-goals;
+- required reading;
+- allowed and forbidden scope;
+- ambiguity gates and safe assumptions;
+- plan, validation, and done conditions.
+
+### 5.3 Authority envelope
+
+Answers where and how the work may act.
+
+Includes:
+
+- authority source and status;
+- execution surface and host;
+- canonical revision and authoritative inputs;
+- allowed reads, tools, mutations, and external effects;
+- approval gates and reviewer;
+- isolation, parallel lanes, active writer, and integrator;
+- trigger mode, prohibited mutations, and safe stop.
+
+### 5.4 Execution evidence
+
+Answers what actually happened.
+
+Includes:
+
+- starting and final revision;
+- environment, branch, worktree, or remote target;
+- files changed;
+- external effects and readbacks;
+- checks reported as `Passed`, `Failed`, or `Not run`.
+
+### 5.5 Continuity checkpoint
+
+Answers how the next actor continues safely.
+
+Includes:
+
+- boundary type;
+- canonical revision;
+- active task or run;
+- surface, host, and isolation;
+- authority status and pending approvals;
+- writer or integration owner;
+- external effects and validation;
+- blockers, next action, and exact continuation method.
+
+### 5.6 Capability and authority profile
+
+Fixed product roles are replaced by a profile.
+
+| Axis | Examples |
+| --- | --- |
+| Context capability | repository files, uploaded snapshots, connected sources, browser, screen, transcript, generated memory |
+| Execution substrate | local checkout, worktree, remote host, cloud container, hosted Work environment |
+| Allowed mutation scope | workspace files, Git operations, network, app data, browser UI, deployment, publication |
+| Project authority source and status | current human instruction, accepted work order, pre-authorized unattended envelope, organization prohibition |
+| Approval routing and availability | human reviewer, automatic reviewer, tool-specific confirmation, no interactive channel |
+| Persistence class | canonical, durable but non-canonical, advisory/generated, ephemeral |
+| Technical access boundary | read-only, workspace-write, network-gated, full access |
+| Write isolation and coordination | shared checkout, dedicated worktree, isolated cloud container, separate writable destination, single writer |
+| Continuation | restore state, resume transcript, fork task, move Git state, product handoff |
+| Trigger | interactive, background goal, scheduled, event-driven, monitoring |
+
+A product may support several profiles. The same product may have different authority on different hosts.
+
+### 5.7 Adapters and enforcement
+
+Product adapters map current product behavior to the stable core. They are dated because availability, UI, memory, permission, and transport behavior changes.
+
+Mechanical controls such as sandboxes, permission rules, worktrees, branch protection, CODEOWNERS, CI, hooks, and validation scripts may enforce parts of the protocol. They do not replace canonical state or human authority.
 
 ---
 
-## 7. State Architecture
+## 6. State Architecture
 
-Context Spine begins with the smallest useful set of documents: the Spine Four.
+Context Spine begins with the Spine Four.
 
 ```other
 repo-root/
@@ -190,641 +266,428 @@ repo-root/
    └─ HANDOFF.md
 ```
 
-### 7.1 `AGENTS.md`
+### 6.1 `AGENTS.md`
 
-`AGENTS.md` is the operating contract for agents. It defines how an agent should work in the repository.
+The operating contract. It defines read order, capability-versus-authority rules, hard stops, dependency policy, writer coordination, validation, reporting, external-effect evidence, automation defaults, and doc-sync.
 
-It should contain build commands, validation commands, read order, hard-stop conditions, dependency rules, reporting format, and doc-sync obligations.
+It should not contain long project history, old plans, detailed product rationale, or running task notes.
 
-It should not contain long project history, old plans, philosophical essays, detailed product rationale, broad design-system documentation, or running task notes.
+### 6.2 `CURRENT_STATE.md`
 
-A good `AGENTS.md` is closer to a build contract than a novel. Context-file studies suggest that agents often follow repository instructions; the failure mode is therefore not only ignored guidance, but also compliant over-exploration caused by low-value or overly broad context.
+Canonical current truth. It identifies the project and revision, current behavior and architecture, implemented and intentionally absent behavior, active constraints, external-source freshness, automation profile, risks, and last verification.
 
-### 7.2 `ai-state/CURRENT_STATE.md`
+### 6.3 `DECISIONS.md`
 
-`CURRENT_STATE.md` is the current truth of the project.
+Append-only durable rationale. Each decision should record date, status, context, consequences, alternatives, and supersession. A durable authority decision should also name the approver, effective scope, and supersession condition.
 
-It answers: what the project is now, what is implemented, what is intentionally not implemented, what constraints are active, what risks are known, and what was last verified.
+### 6.4 `HANDOFF.md`
 
-It should not explain the whole history. If a historical reason matters, it should link to `DECISIONS.md`.
+The continuity checkpoint. It is not a chat summary and not a grant of authority. Update it after meaningful work and before a task, agent, surface, host, context-compaction, or automation boundary.
 
-### 7.3 `ai-state/DECISIONS.md`
+### 6.5 Read order
 
-`DECISIONS.md` is an append-only decision log.
+After applicable environment and project instructions are loaded, restore project state in one consistent order:
 
-Each entry should include an ID, date, status, context, decision, consequences, alternatives considered, and supersession links when relevant.
+1. `AGENTS.md`
+2. `ai-state/HANDOFF.md`
+3. `ai-state/CURRENT_STATE.md`
+4. active work order, if named
+5. relevant entries in `ai-state/DECISIONS.md`
+6. relevant quality or domain files
 
-Do not edit history to make the project look cleaner. Dirty history is often the most useful part.
+This is recovery order, not authority priority. `HANDOFF.md` locates the current work but cannot override `CURRENT_STATE.md`, an accepted work order, or accepted decisions. Do not read every historical artifact by default.
 
-### 7.4 `ai-state/HANDOFF.md`
+### 6.6 Extension documents
 
-`HANDOFF.md` is the next-session survival document.
+| Artifact | Role | Add when | Removal path |
+| --- | --- | --- | --- |
+| `ai-state/tasks/T-000X.md` | Task and authority contract | Work crosses the work-order gate or the human explicitly requests one. | Close or archive; promote durable outcomes into current state or decisions. |
+| `ai-state/QUALITY_BAR.md` | Repeatable quality rubric | Quality criteria are repeatedly forgotten. | Fold stable criteria into an existing domain document or remove. |
+| `ai-state/PROJECT_CHARTER.md` | Durable project identity | Mission, users, non-goals, or principles need a stable home. | Fold stable identity into project documentation. |
+| `ai-state/STATUS.md` | Human-facing projection | Stakeholders need a shallow status view. | Remove when unused or stale. |
+| `ai-state/PROGRESS_LOG.md` | Append-only execution log | Auditability, automation runs, or external effects require history. | Archive when no longer useful. |
+| `ai-state/DRAFT.md` | Disposable scratchpad | Thinking needs a non-authoritative surface. | Delete after promotion or abandonment. |
+| `.agents/skills/*/SKILL.md` | Reusable procedure | A repeated workflow has stabilized. | Remove when it no longer prevents a named failure. |
 
-It should remain short and answer: the latest completed work, the current focus, the next action, blockers, human input needed, validation that passed, and validation that did not run.
-
-`HANDOFF.md` should be updated at the end of every meaningful session.
-
-### 7.5 Extension documents
-
-Extension documents are not part of the default minimum. Add them only when a real failure mode appears.
-
-| **Artifact**                  | **Role**                  | **Add when**                                                        | **Removal path**                                                                  |
-| ----------------------------- | ------------------------- | ------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| `ai-state/tasks/T-000X.md`    | Work order                | Tasks are ambiguous, risky, or multi-file.                          | Close or archive task; fold durable outcome into `CURRENT_STATE.md` or decisions. |
-| `ai-state/QUALITY_BAR.md`     | Repeatable quality rubric | Quality criteria are being forgotten or applied inconsistently.     | Fold stable criteria into `AGENTS.md` or domain docs; remove obsolete criteria.   |
-| `ai-state/PROJECT_CHARTER.md` | Durable project identity  | Mission, target users, non-goals, or principles need a stable home. | Fold stable identity into product docs or README; keep durable changes in decisions. |
-| `ai-state/STATUS.md`          | Human-facing status map   | Stakeholders need a shallow status view.                            | Remove when unused; fold current public status into `HANDOFF.md` if needed.       |
-| `ai-state/PROGRESS_LOG.md`    | Append-only execution log | Auditability or recovery requires a historical record.              | Archive when audit history is no longer useful.                                   |
-| `ai-state/DRAFT.md`           | Disposable scratchpad     | Agents need a place to think without creating truth.                | Delete after promoted facts move into real state documents.                       |
-| `.agents/skills/*/SKILL.md`   | Reusable procedure        | A manual workflow has stabilized and recurs often.                  | Remove when the procedure no longer recurs or prevents a named failure.           |
-
-`DRAFT.md` is never a source of truth. It may support thinking, but it cannot authorize implementation.
-
-Retiring an artifact is a decision: record the removal and where durable information moved.
+Every optional artifact must have a role and removal path.
 
 ---
 
-## 8. Work Order Model
+## 7. Work Order Model
 
-A work order turns intent into a bounded task.
+A work order turns intent into an accepted task and authority contract.
 
-A useful work order contains:
+Required fields for work that crosses the gate:
 
 ```other
-goal
-+ non-goals
+status
++ goal and non-goals
 + required reading
-+ allowed scope
-+ forbidden scope
-+ ambiguity gates
++ allowed and forbidden scope
++ ambiguity gates and safe assumptions
++ authority envelope
 + plan
 + validation
-+ completion conditions
++ done conditions
++ state impact
 ```
 
-The most important field is often not the goal. It is the non-goals. Agents are good at making plausible expansions. Non-goals keep the blast radius visible.
-
-A work order is required when the task may touch architecture, authentication, billing, database schema, privacy, accessibility, public claims, brand direction, data migration, dependencies, or multiple product surfaces.
-
-A request without non-goals, scope, validation, and done conditions is not yet a work order. It is still an intention.
-
-Example:
+Use explicit status transitions:
 
 ```other
-# T-0007: Add export preview for design tokens
-
-## Goal
-Give users a preview of the token export payload before downloading it.
-
-## Non-goals
-- Do not redesign the token editor.
-- Do not change the token schema.
-- Do not add a new UI library.
-
-## Scope
-Allowed:
-- app/export/**
-- components/export-preview/**
-
-Forbidden:
-- auth/**
-- billing/**
-- database migrations
-
-## Ambiguities
-Ask before implementation if:
-- preview should include private tokens;
-- export schema must change;
-- server-side generation is required.
-
-## Validation
-- npm run lint
-- npm run typecheck
-- npm test
-- manual check at 375px width
-
-## Done when
-- preview renders the exact export payload;
-- no schema change is introduced;
-- validation results are recorded;
-- affected state documents are updated;
-- HANDOFF.md is updated.
+Proposed → Accepted → Active → Done
+                 ↘ Blocked
+                 ↘ Superseded
 ```
+
+`Accepted` means the scope and authority envelope have been approved. `Active` means execution has begun. A proposed order cannot authorize implementation.
+
+### 7.1 Authority envelope
+
+At minimum, identify:
+
+```other
+Authority source:
+Execution surface and host:
+Canonical project and revision:
+Authoritative inputs and freshness:
+Allowed reads and tools:
+Allowed mutations and external effects:
+Approval gates and reviewer:
+Isolation and parallel lanes:
+Active writer and integration owner:
+Trigger mode:
+Prohibited mutations:
+Safe stop condition:
+```
+
+The envelope records authority derived from the current human or governing process. It cannot override higher-level policy or grant more authority than its source.
+
+### 7.2 Automation profile
+
+Automation does not require a fifth default state file. The default profile belongs in `CURRENT_STATE.md`:
+
+```other
+Manual — no unattended actions or external writes are authorized.
+```
+
+Profiles are intentionally small:
+
+- `Manual`: no unattended run is authorized.
+- `Read-only`: unattended work may observe and report but may not mutate project or external state.
+- `Bounded-write`: unattended mutation is permitted only inside a task-specific authority envelope with overlap, retry, idempotency, stop, and ownership rules.
+
+For scheduled, event-driven, or unattended work, the active work order should also record:
+
+```other
+Trigger and cadence:
+Canonical inputs and freshness check:
+Allowed effects:
+Overlap policy: skip | queue | cancel previous
+Retry budget and idempotency rule:
+Stop or escalation condition:
+Evidence destination:
+Result and state owner:
+First-run review plan:
+```
+
+An unattended run must fail safely when it reaches an approval gate that it cannot surface.
 
 ---
 
-## 9. Operating Protocol
+## 8. Operating Protocol
 
-Context Spine uses one loop.
+Context Spine uses one logical loop. Products may combine steps or keep a task running across them, but the obligations remain.
 
 ```other
 intake
 → input readiness
 → state restoration
+→ capability and authority preflight
 → work-order gate
-→ plan
+→ choose execution and isolation
 → execute
 → validate
-→ doc-sync
-→ handoff
+→ reconcile canonical state
+→ continuity checkpoint
 → report
 ```
 
-### 9.1 Intake
+### 8.1 Intake and input readiness
 
-Capture the user’s request. Separate explicit instruction from inferred intent.
+Separate explicit instruction from inferred intent. Check whether required human input is missing: intent, source material, constraints, priorities, acceptance criteria, examples, scope, or approval.
 
-If the request is small and low-risk, the agent may proceed with the minimal core. If the request is broad, ambiguous, or risky, it should create a work order before implementation.
+Low-risk, local, reversible work may proceed directly under an explicit request. Require a work order when work is broad or materially ambiguous, touches a hard-stop area, authorizes external, irreversible, or cost-bearing effects, enables unattended writes, or permits multiple writers. A multi-file change alone does not require one.
 
-### 9.2 Input readiness
+### 8.2 Project stewardship
 
-Before producing a work order, implementation prompt, review prompt, acceptance recommendation, or next-step plan, the agent should check whether required human input is missing.
+An assistant may surface weak assumptions, quality risks, research gaps, unclear success criteria, sequencing problems, and improvement opportunities. Suggestions are not decisions and do not authorize scope expansion.
 
-Human input is broader than approval. It may include a decision, intent, source material, constraints, preferences, priorities, research direction, acceptance criteria, scope boundary, files, examples, references, or open-ended direction.
+### 8.3 State restoration
 
-If missing input affects scope, quality, hard-stop areas, or project identity, the agent should ask before proceeding. It should not convert missing input into assumptions, forced choices, or premature next steps.
+Use the canonical read order. Confirm the actual revision, current working tree or source snapshot, external-source freshness, and any mismatch with the checkpoint.
 
-Review-only work may continue only when it directly helps the human provide the missing input.
+### 8.4 Capability and authority preflight
 
-### 9.3 Project stewardship
+Answer before action:
 
-Context Spine does not reduce the assistant to a state clerk. In interactive use, especially with ChatGPT-like assistants, the agent should also help the human keep the project coherent, intentional, and improving over time.
+- What sources and tools are visible here?
+- Which project and revision are canonical?
+- Where will execution occur?
+- Which local and external mutations are authorized?
+- Which actions require approval, and can the run request it?
+- What isolation is available?
+- Who owns each write and the integration?
+- What evidence and sync-back path are required?
 
-When relevant, the assistant should surface missing input, weak assumptions, quality risks, research gaps, unclear success criteria, sequencing problems, and opportunities to simplify or strengthen the project.
+Tool access and sandbox permission do not answer these questions by themselves.
 
-This stewardship role does not authorize the agent to make decisions for the human. Suggestions are not decisions. Proposed improvements are not scope approval. If a suggestion affects scope, quality, hard-stop areas, project identity, public claims, architecture, accessibility, brand, visual language, or design-system foundations, it should be treated as input for discussion before execution.
+### 8.5 Work-order gate
 
-Do not wait for the human to ask the perfect question. If the project cannot move responsibly without intent, source material, constraints, priorities, references, or acceptance criteria, ask for them directly.
+If the actor cannot state goal, non-goals, scope, ambiguities, authority, validation, and done conditions, it should not start broad implementation. The order must be `Accepted` or `Active`.
 
-### 9.4 State restoration
+### 8.6 Plan and choose isolation
 
-Read selectively in this order:
+Identify likely files, external effects, validation, and approval points. Parallelize independent read lanes. Keep one writer per artifact. For parallel writes, use dedicated worktrees or separate writable destinations with non-overlapping scope and a named integrator; a branch or task alone does not isolate files.
 
-1. `AGENTS.md`
-2. active work order, if any
-3. `ai-state/HANDOFF.md`
-4. `ai-state/CURRENT_STATE.md`
-5. relevant entries in `ai-state/DECISIONS.md`
-6. relevant quality or domain documents
+### 8.7 Execute
 
-Do not read every historical document by default. State restoration should be targeted, not ceremonial.
+Stay inside scope and authority. If a required change is outside either, request expansion. If no approval channel exists, stop safely. A child agent has no broader project authority than its parent task.
 
-### 9.5 Work-order gate
+### 8.8 Validate
 
-If the agent cannot state the goal, non-goals, allowed scope, forbidden scope, ambiguities, validation, and completion conditions, it should not start broad implementation.
+Tie validation to the actual revision, environment, and integrated result. Report every required check as `Passed`, `Failed`, or `Not run` with a reason.
 
-### 9.6 Plan
+### 8.9 Reconcile canonical state
 
-State the plan before making broad changes. Identify likely files, validations to run, and decisions that may need human input.
+Update the minimum necessary artifacts:
 
-For implementation tasks, prefer small diffs and visible checkpoints.
+- `CURRENT_STATE.md` when current truth, canonical revision, external freshness, or automation profile changes;
+- `DECISIONS.md` for durable accepted, reversed, or superseded decisions;
+- the active work order when status or authority changes;
+- `HANDOFF.md` after meaningful work and before a boundary;
+- `STATUS.md` only as a projection;
+- `PROGRESS_LOG.md` only when audit history is useful.
 
-### 9.7 Execute
+Serialize state writes through the active state owner.
 
-Work inside the declared scope. Avoid opportunistic refactors unless the work order allows them.
+### 8.10 Checkpoint and report
 
-If the agent discovers a necessary change outside scope, it must pause and request scope expansion.
+The checkpoint names the boundary, revision, host, task, authority, owner, pending approvals, effects, validation, blockers, next action, and continuation method.
 
-### 9.8 Validate
-
-Run the validations defined in the work order or `AGENTS.md`.
-
-If a validation cannot be run, record it as **Not run** with the reason. Never report a validation as passed unless it actually ran and passed.
-
-### 9.9 Synchronize state
-
-Update the minimum necessary state documents.
-
-- Update `CURRENT_STATE.md` when current truth changes.
-- Append to `DECISIONS.md` when a meaningful decision is made or replaced.
-- Update `HANDOFF.md` at the end of meaningful work.
-- Update the task file status if a work order exists.
-- Update `STATUS.md` if stakeholders need a visible change.
-- Append to `PROGRESS_LOG.md` only when audit history is useful.
-
-### 9.10 Report
-
-The final report should include work performed, validations, state updates, decisions, human input needed, and next action.
+The final report includes execution context, work performed, files changed, external effects, validation, state updates, decisions, missing input, and next action.
 
 ---
 
-## 10. Priority and Conflict Handling
+## 9. Priority, Conflict, and Hard Stops
 
-Context Spine uses four operational tiers.
+Context Spine's project hierarchy operates inside higher-level system, developer, organization, legal, security, and tool policy. A project file cannot override those boundaries.
 
 ```other
-Tier 1 — Immediate instruction
-Current user instruction and the active work order.
-
-Tier 2 — Operating contract
-AGENTS.md and applicable repository rules.
-
-Tier 3 — Current state
-CURRENT_STATE.md and active decisions in DECISIONS.md.
-
-Tier 4 — Reference material
-QUALITY_BAR.md, domain docs, PROGRESS_LOG.md, STATUS.md, DRAFT.md, and external references.
+Tier 1 — Current explicit human or governing authority
+Tier 2 — Accepted work order and authority envelope
+Tier 3 — AGENTS.md, canonical current state, and accepted decisions
+Tier 4 — HANDOFF.md, quality files, status, logs, drafts, transcripts, memory, caches, and references
 ```
 
-When tiers conflict, the agent must not silently blend them. It must report the conflict if the decision affects a hard-stop area.
+An accepted work order cannot exceed its authority source. `HANDOFF.md` is read early for recovery but remains a lower-authority checkpoint: it can record approval but cannot override current state or accepted decisions, and it cannot renew authority. When tiers conflict, do not silently blend them.
 
-This is intentionally simpler than a fine-grained hierarchy. Current agents can be guided by instruction priority, but a long subtle hierarchy should not be treated as a reliable enforcement mechanism.
+Request current approval before an unauthorized change to:
 
-Prompt-level rules are guidance, not deterministic enforcement. For operations that must not happen accidentally, pair Context Spine with mechanical controls: permission deny lists, branch protection, CODEOWNERS, CI gates, pre-commit hooks, or tool-specific lifecycle hooks such as `PreToolUse`. The prompt should say when to stop; the environment should block what must never proceed silently.
-
-### Hard-stop conditions
-
-The agent must stop and ask before proceeding when a task creates or changes any of the following:
-
-- authentication, authorization, or account recovery;
-- billing, pricing, payments, credits, or subscription behavior;
+- authentication, authorization, permissions, or account recovery;
+- billing, pricing, payments, credits, subscriptions, or cost-bearing resources;
 - database schema, migrations, or destructive data operations;
-- privacy, personal data, customer data, analytics tracking, or retention policy;
-- security boundaries, secrets, keys, tokens, sandbox permissions, or external access;
-- legal notices, compliance requirements, public claims, or licensing terms;
-- accessibility requirements that affect real use, not just markup;
-- internationalization, localization, naming, cultural interpretation, or market-specific UX;
-- brand identity, tone, naming, visual language, or design-system foundations;
-- production infrastructure, deployment, CI, observability, or cost-bearing resources;
-- new runtime dependencies or major dependency upgrades;
-- irreversible deletion, overwrite, or migration;
-- contradictory instructions among user request, work order, state, and decisions.
+- privacy, personal data, customer data, analytics, or retention;
+- secrets, keys, tokens, sandbox permissions, credentials, or external access;
+- legal notices, compliance, licensing, or public claims;
+- accessibility requirements affecting real use;
+- internationalization, localization, naming, or market-specific UX;
+- brand identity, tone, visual language, or design-system foundations;
+- production infrastructure, deployment, CI, observability, or publication;
+- new dependencies or major upgrades;
+- irreversible deletion, overwrite, migration, or external communication;
+- contradictory instructions, state, decisions, or authority.
 
-When in doubt, stop. A good stop is cheaper than a confident repair.
+If the run cannot request required approval, it must fail safely and report the blocker.
 
-For irreversible operations, a hard-stop rule should eventually become a hard gate. Prompt compliance is useful, but permission rules, hooks, CI checks, and deployment protections are the safer layer.
-
----
-
-## 11. Verification and Documentation Sync
-
-Context Spine treats verification and doc-sync as part of the task, not as aftercare.
-
-### 11.1 Validation evidence
-
-Report validation in three categories:
-
-```other
-## Validated
-Passed:
-- ...
-
-Failed:
-- ...
-
-Not run:
-- ... because ...
-```
-
-The `Not run` category is essential. It prevents implied confidence.
-
-### 11.2 Git integration
-
-Doc-sync should travel with the change it describes.
-
-Recommended rules:
-
-- Every non-trivial code change should update relevant state documents or explicitly state `No state change: <reason>` in the PR or final report.
-- Work branches should include the task ID when possible: `T-0007-export-preview`.
-- Commit messages should reference the task ID or decision ID when relevant.
-- Pull requests should include a **State Impact** section.
-- State document updates should be reviewed like code.
-
-A lightweight PR state-impact block:
-
-```other
-## State Impact
-- [ ] CURRENT_STATE.md updated
-- [ ] DECISIONS.md updated
-- [ ] HANDOFF.md updated
-- [ ] task file updated
-- [ ] No state change needed because: ...
-```
-
-### 11.3 Stale-state checks
-
-Context Spine fails when state documents rot. Stale-state detection should start manual and become automated only after the rules stabilize.
-
-Minimum checks:
-
-- `HANDOFF.md` names a next action that actually exists.
-- Referenced task IDs exist.
-- Referenced decision IDs exist.
-- Superseded decisions point to replacement decisions.
-- Completed tasks are not still listed as active.
-- `CURRENT_STATE.md` does not contradict the latest active decision.
-- Validations reported as passed have evidence.
-- `STATUS.md`, if present, matches `CURRENT_STATE.md`.
-- Known stale documents or sections are marked `STALE / DO NOT TRUST` and link to their replacement.
-- Sensitive data has not been copied into state documents.
-
-The point is not to make documentation heavy. The point is to make false state visible.
-
-Mechanical checks can catch missing sections, missing validation headings, line-count bloat, and likely stale state. These checks are design principles and working hypotheses, not measured proof of effectiveness. Automation must not become a second source of truth: passing a check does not prove project state is correct.
+Prompt rules are not deterministic enforcement. Use mechanical controls for actions that must not proceed silently.
 
 ---
 
-## 12. Security, Boundaries, and Failure Modes
+## 10. Verification and State Synchronization
+
+### 10.1 Validation evidence
+
+Record:
+
+- canonical starting and final revision or snapshot;
+- execution surface and host;
+- branch, worktree, or isolated environment;
+- relevant source freshness;
+- integrated result tested;
+- files changed;
+- external effects and readbacks;
+- `Passed`, `Failed`, and `Not run` checks.
+
+A passing check on one lane or stale snapshot is not evidence that the integrated canonical result passed.
+
+### 10.2 Git integration
+
+Recommended software rules:
+
+- non-trivial changes update relevant state or explicitly report why no state changed;
+- branches, commits, and pull requests reference task or decision IDs when useful;
+- pull requests include state impact and external-effect impact;
+- state updates are reviewed like code;
+- one integrator serializes final state updates after parallel work.
+
+### 10.3 Stale-state checks
+
+Check that:
+
+- named tasks and decisions exist;
+- superseded decisions link to replacements;
+- completed tasks are not active;
+- `CURRENT_STATE.md` matches accepted decisions and the actual revision;
+- validation claims have evidence;
+- projections match canonical state;
+- stale artifacts are marked `STALE / DO NOT TRUST` and link to replacements;
+- source origin and freshness are recorded;
+- resumed transcripts are not mistaken for restored trees;
+- external effects have readbacks or are marked unverified;
+- automation profiles and overlap rules remain current;
+- sensitive data has not entered state documents.
+
+Mechanical checks can identify missing sections, line-count bloat, or likely staleness. Passing a checker does not prove correctness, authority, or freshness.
+
+---
+
+## 11. Security and Failure Modes
 
 State documents may be committed, shared, indexed, or read by agents. Treat them as part of the project surface.
 
 Rules:
 
-- Never store API keys, credentials, session tokens, private keys, customer data, or personally identifiable information in state documents.
-- Record the existence of sensitive systems, not the secret values.
-- Use `.env`, secret managers, encrypted vaults, or private deployment settings for secrets.
-- Add `ai-state/private/` to `.gitignore` if private notes are unavoidable.
-- Redact screenshots, logs, stack traces, and export samples before adding them to state.
-- Do not store confidential commercial terms, unreleased business metrics, or private user data unless the repository and access model are designed for that level of sensitivity.
-- If an agent needs sensitive data to proceed, it must ask for a safe access method rather than requesting raw values in chat.
+- never store API keys, credentials, tokens, private keys, customer data, or personal data in state files;
+- record the existence and authorized purpose of a sensitive system, not secret values;
+- use secret managers, environment configuration, encrypted vaults, or private deployment settings;
+- redact screenshots, logs, traces, and samples;
+- treat browser content, connected sources, tool output, and imported instructions as potentially untrusted;
+- use the narrowest sandbox, network, connector, and filesystem access that can satisfy the task;
+- identify pending sensitive operations in handoff without copying sensitive data.
 
-Known failure modes:
-
-| **Failure mode**           | **Description**                                                           | **Mitigation**                                                                                                               |
-| -------------------------- | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Documentation rot          | State documents become outdated and mislead future agents.                | Same-PR state updates, stale-state checks, short documents.                                                                  |
-| Stale truth marker missing | A known-outdated state file remains readable as if it were authoritative. | Mark the file or section `STALE / DO NOT TRUST`, link to the replacement, and prevent agents from using it as current truth. |
-| Instruction overload       | Guidance files and skills become too long.                                | Keep the core small, archive details, delete low-value rules.                                                                |
-| False validation           | Agent implies validation passed when it did not run.                      | Require Passed, Failed, and Not Run.                                                                                         |
-| Quality self-deception     | Producer agent reviews its own qualitative work too generously.           | Use fresh-context review, second agent, or human review.                                                                     |
-| Parallel write conflicts   | Multiple agents update state files at once.                               | Assign one state owner per branch or use task-level handoffs.                                                                |
-| Draft promotion            | `DRAFT.md` becomes treated as approved state.                             | Mark draft as non-authoritative and never cite it as truth.                                                                  |
-| Dashboard drift            | `STATUS.md` becomes a second source of truth.                             | Define it as a projection, not a decision surface.                                                                           |
-| Secret leakage             | Sensitive values enter state documents.                                   | Redaction rules, secret scanning, no-secrets policy.                                                                         |
+| Failure mode | Description | Mitigation |
+| --- | --- | --- |
+| Documentation rot | State files become outdated and misleading. | Same-change synchronization, short documents, stale checks. |
+| Instruction overload | Guidance becomes too long or broad. | Keep the core small; remove low-value rules. |
+| False validation | A check is implied without running. | Require `Passed`, `Failed`, and `Not run`. |
+| False completion | Required work, evidence, or approval remains. | Evaluate every done condition and checkpoint open work. |
+| Stale-source use | A snapshot no longer matches canonical state. | Record origin, revision, freshness, and sync-back path. |
+| Transcript/tree mismatch | A resumed task is mistaken for an old working tree. | Verify revision and diff after resume, fork, or handoff. |
+| Authority escalation | Technical access or prior context is treated as permission. | Record authority source and current approval status. |
+| Parallel write conflict | Agents overlap or overwrite one another. | One writer per artifact; isolation; one integrator. |
+| External-effect omission | An app or remote mutation is absent from the report. | External-effect ledger and post-action readback. |
+| Automation replay | Retry or overlap repeats a mutation. | Overlap policy, retry budget, idempotency, stop condition. |
+| Unsupported handoff loss | Required state does not move across products or hosts. | Name source, destination, revision, transport, and checkpoint. |
+| Recall promotion | Memory, cache, transcript, or draft becomes accepted truth. | Keep advisory until reviewed and promoted. |
+| Secret leakage | Sensitive values enter durable state. | Redaction, secret scanning, and no-secrets policy. |
 
 ---
 
-## 13. Evaluation Criteria
+## 12. Evaluation
 
 A team should measure Context Spine before calling it effective.
 
-### 13.1 Baseline
+### 12.1 Baseline
 
-For one week, record the current workflow without forcing Context Spine.
+Record the existing workflow without forcing Context Spine. Measure:
 
-Measure:
+- boundary recovery time and accuracy;
+- repeated decisions;
+- scope or authority violations;
+- stale-source incidents;
+- validation omissions and false completion;
+- doc-sync misses;
+- parallel write conflicts;
+- external-effect evidence gaps;
+- automation duplicate effects;
+- human correction and rework time;
+- current context and coordination cost.
 
-- time for a new AI session to become useful;
-- number of repeated decisions;
-- number of scope drift incidents;
-- number of validation omissions;
-- number of stale or missing documentation incidents;
-- number of user corrections caused by intent mismatch;
-- time spent reconstructing project status.
+### 12.2 Pilot
 
-### 13.2 Pilot
+Use the Spine Four and accepted work orders for meaningful tasks. Include relevant profiles rather than only one happy path:
 
-For three weeks, use the Spine Four and work orders for meaningful tasks.
+- interactive local work;
+- a cross-surface or cross-host restoration;
+- parallel read lanes;
+- an isolated write lane and integration;
+- an unattended or simulated unattended run if automation is relevant.
 
-Track the same metrics plus:
+Do not publish a local result until the baseline, task classes, failures, and measurement method are recorded.
 
-- doc-sync misses per week;
-- tasks completed with complete handoff;
-- hard-stop events caught before implementation;
-- human decisions surfaced by the agent;
-- average state document update time.
+### 12.3 Metrics
 
-### 13.3 Expansion criteria
+| Metric | Definition |
+| --- | --- |
+| Boundary recovery time | Minutes to identify revision, state, authority, next action, blockers, and validation after a boundary. |
+| Recovery accuracy | Whether restored revision, task, authority, and next action match canonical evidence. |
+| Repeated decision | An accepted choice is reopened because rationale cannot be found or trusted. |
+| Scope or authority violation | A mutation exceeds non-goals, allowed scope, approval, or external-effect authority. |
+| Stale-source use | Work relies on a source older than the required revision. |
+| Parallel write conflict | Concurrent lanes overlap or require unplanned reconciliation. |
+| Validation omission | A required check is neither run nor reported as `Not run`. |
+| False completion | Work is called complete while a done condition remains open. |
+| External-effect gap | A remote mutation lacks durable evidence or readback. |
+| Automation replay | A run repeats an effect contrary to overlap or idempotency rules. |
+| Doc-sync miss | Current truth changes without the relevant canonical artifact being updated. |
+| Continuity completeness | Applicable revision, host, authority, owner, effects, validation, and continuation fields are current. |
+| Human rework | Time spent correcting intent, reconstructing state, resolving conflicts, or reversing work. |
+| Context cost | Time or token overhead introduced by the protocol. |
 
-Expand only if:
+### 12.4 Expansion and reduction criteria
 
-- session restoration time improves enough to matter locally;
-- repeated decisions decrease;
-- doc-sync misses remain manageable;
-- validation reporting becomes clearer;
-- the team still trusts `CURRENT_STATE.md`.
+Expand only if local evidence shows that recovery, authority, validation, or continuity improves enough to justify cost.
 
-Reduce scope if:
+Reduce or remove artifacts if:
 
-- doc-sync misses happen repeatedly;
-- state updates feel heavier than the work;
+- state maintenance costs more than the failures it prevents;
 - agents read too much and act less effectively;
-- documents duplicate each other;
-- the human stops reading the status surface.
+- documents duplicate one another;
+- the human or team stops trusting the state surface;
+- a mechanical control replaces a manual artifact more reliably.
 
-### 13.4 Metric definitions
-
-Use the same definitions during the baseline and the pilot. A metric is useful only if another person can record it the same way.
-
-| **Metric**                 | **Definition**                                                                                                                     | **How to record**                                                                                                              | **Bad record**                 |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------ |
-| New-session recovery time  | Minutes from the start of a fresh AI session to a correct summary of current state, next action, blockers, and validation status.  | Start the timer when the session begins. Stop when the human accepts the summary or the agent correctly names the active task. | “Fast enough.”                 |
-| Repeated decision          | A previously accepted decision is reopened because the prior rationale cannot be found or trusted.                                 | Count each reopened decision. Link the decision ID if one exists.                                                              | “We talked about this again.”  |
-| Scope drift incident       | A change touches a non-goal, forbidden path, hard-stop area, or unapproved adjacent feature.                                       | Count once per task. Record the violated scope rule.                                                                           | “The agent did extra cleanup.” |
-| Validation omission        | A required check was not run and was not reported as **Not run** with a reason.                                                    | Count each missing validation category per task.                                                                               | “Tests probably pass.”         |
-| Doc-sync miss              | Project state changed but the relevant state document, task file, or handoff was not updated.                                      | Count per affected artifact. Record the missing file.                                                                          | “Docs need update later.”      |
-| Intent mismatch correction | The human had to correct the agent because implementation followed a plausible but wrong interpretation of the request.            | Count each correction that changes scope, behavior, UX, claim, or decision.                                                    | “Minor clarification.”         |
-| Hard-stop catch            | The agent identified a hard-stop area before implementation and asked for a decision.                                              | Count caught events separately from missed events.                                                                             | “Asked a question.”            |
-| Handoff completeness       | The session ended with current focus, last completed work, next action, blockers, human decisions, and validation status recorded. | Mark complete only when all required handoff fields are present and current.                                                   | “Updated handoff.”             |
-
-The minimum useful metric is simple:
+The minimum useful evaluation asks:
 
 ```other
-Can a fresh session understand the current state and next action faster than before?
-```
-
-If not, the spine is decorative.
-
----
-
-## 14. Conclusion
-
-Context Spine is not a request for agents to remember more. It is a workflow specification for making project state explicit enough that agents can reconstruct the work at every session boundary.
-
-The method should be judged by operational outcomes: whether new sessions recover state faster, whether repeated decisions decrease, whether work remains bounded, whether validation is visible, and whether handoff survives context loss.
-
-The specification ends here. The following section provides a reference implementation for applying Context Spine in a real repository.
-
----
-
-# Reference Implementation
-
-The following section is a reference implementation, not a requirement for every project. Use it as a starting kit, then delete, shorten, or adapt anything that does not prevent a real failure in the project at hand.
-
-## Bootstrap Prompt
-
-Use this prompt when introducing Context Spine to an existing repository.
-
-```other
-You are helping operate this repository with Context Spine.
-
-Do not use chat history as the source of truth. Treat the repository as the shared project state.
-
-Before implementation, inspect the repository and determine whether these files exist:
-- AGENTS.md
-- ai-state/CURRENT_STATE.md
-- ai-state/DECISIONS.md
-- ai-state/HANDOFF.md
-
-If they do not exist, propose the smallest viable Context Spine setup. Do not create optional documents unless there is a clear reason.
-
-First produce:
-1. a short assessment of the repository state;
-2. the minimal files you recommend creating or updating;
-3. any missing human input before setup.
-
-Do not implement product features during setup unless explicitly asked.
-```
-
-## Session Resume Prompt
-
-Use this at the start of a new AI or coding-agent session.
-
-```other
-Resume this project using Context Spine.
-
-Read in this order:
-1. AGENTS.md
-2. ai-state/HANDOFF.md
-3. ai-state/CURRENT_STATE.md
-4. the active work order, if one is named
-5. relevant entries in ai-state/DECISIONS.md
-
-Then report:
-- current project state;
-- active task or next action;
-- known blockers;
-- validations last run;
-- human input needed, including decisions;
-- any contradictions or stale state you notice.
-
-Do not start implementation until the current state and next action are clear.
-```
-
-## Work Order Creation Prompt
-
-Use this when a request is broad, risky, ambiguous, or likely to touch multiple files.
-
-```other
-Convert the request into a Context Spine work order.
-
-Before producing the work order, identify missing user inputs. If the task cannot be responsibly scoped without them, ask first instead of drafting the work order.
-
-The work order must include:
-- goal;
-- non-goals;
-- must-read files;
-- allowed scope;
-- forbidden scope;
-- ambiguities that require questions before implementation;
-- safe assumptions;
-- implementation plan;
-- validation commands or checks;
-- done conditions;
-- state documents to update if the task succeeds.
-
-If the request touches hard-stop areas, list the human input or decisions needed before implementation.
-
-Do not implement yet. Produce the work order first.
-```
-
-## Implementation Prompt
-
-Use this after a work order is accepted.
-
-```other
-Implement the active work order using Context Spine.
-
-Rules:
-- Stay inside the declared scope.
-- Do not modify forbidden paths.
-- Ask before changing any hard-stop area.
-- Prefer small diffs and simple implementation.
-- Do not add dependencies unless the work order explicitly allows it.
-- Run the required validation checks.
-- Record any validation that cannot be run as Not run with the reason.
-- Update the relevant state documents before reporting completion.
-
-Final report must include:
-- work performed;
-- files changed;
-- validations passed, failed, and not run;
-- state documents updated;
-- decisions made and human input needed;
-- next action.
-```
-
-## Doc-Sync Prompt
-
-Use this after code, design, research, or content changes.
-
-```other
-Perform Context Spine doc-sync for the latest changes.
-
-Inspect the changes and decide which state documents need updates:
-- CURRENT_STATE.md if current truth changed;
-- DECISIONS.md if a durable decision was made, replaced, or reversed;
-- HANDOFF.md for next-session continuity;
-- the active task file if task status changed;
-- STATUS.md if stakeholder-facing status changed;
-- PROGRESS_LOG.md only if audit history is useful.
-
-If no state document needs an update, explain why.
-
-Do not invent validation results. Preserve Passed, Failed, and Not run accurately.
-```
-
-## Quality Review Prompt
-
-Use this when the output has product, UI, design, accessibility, brand, research, or public-facing impact.
-
-```other
-Review the result against Context Spine quality criteria.
-
-Use a fresh review posture. Do not defend the implementation.
-
-Check:
-- correctness against the work order;
-- scope control;
-- user experience and edge states;
-- accessibility in actual use;
-- visual or brand consistency, if relevant;
-- localization or cultural risk, if relevant;
-- source quality and claim strength, if relevant;
-- validation evidence;
-- state document accuracy.
-
-Return:
-- ready / needs revision / blocked / blocked by missing user input;
-- reasons;
-- specific required changes;
-- if blocked by missing user input, the missing input and the natural question to ask;
-- what should not be changed further.
-```
-
-## Handoff Report Prompt
-
-Use this at the end of a meaningful session.
-
-```other
-Create a Context Spine handoff.
-
-Update ai-state/HANDOFF.md with:
-- current focus;
-- last completed work;
-- next action;
-- blockers;
-- human decisions needed;
-- missing human input, separately from routine next action when applicable;
-- validation results;
-- files or areas touched;
-- notes for the next session.
-
-If next work is blocked by missing user input, make that clear.
-
-Then produce a short final report for the human:
-- work completed;
-- what was verified;
-- what was not verified;
-- what state documents changed;
-- what human input is needed next, if any.
+Can a new actor recover the correct state and authority faster than before?
+Did the protocol reduce costly drift without adding more overhead than it saved?
 ```
 
 ---
 
-## Repository Layout
+## 13. Reference Implementation
 
-### Minimal layout
+The canonical reference implementation lives in the repository files, not duplicated code blocks in this article. This prevents the research document from becoming a stale second template source.
+
+| Purpose | Canonical file |
+| --- | --- |
+| Minimal operating contract | [`templates/minimal/AGENTS.md`](templates/minimal/AGENTS.md) |
+| Current-state template | [`templates/minimal/ai-state/CURRENT_STATE.md`](templates/minimal/ai-state/CURRENT_STATE.md) |
+| Decision template | [`templates/minimal/ai-state/DECISIONS.md`](templates/minimal/ai-state/DECISIONS.md) |
+| Continuity checkpoint | [`templates/minimal/ai-state/HANDOFF.md`](templates/minimal/ai-state/HANDOFF.md) |
+| Work order | [`templates/work-order.md`](templates/work-order.md) |
+| Validation log | [`templates/validation-log.md`](templates/validation-log.md) |
+| Quality bar | [`templates/quality-bar.md`](templates/quality-bar.md) |
+| Prompts | [`prompts/`](prompts/) |
+| Skills | [`.agents/skills/`](.agents/skills/) |
+| ChatGPT instructions | [`chatgpt/PROJECT_INSTRUCTIONS.md`](chatgpt/PROJECT_INSTRUCTIONS.md) |
+| ChatGPT Work adapter | [`chatgpt/WORK_ADAPTER.md`](chatgpt/WORK_ADAPTER.md) |
+| Codex execution adapter | [`codex/EXECUTION_ADAPTER.md`](codex/EXECUTION_ADAPTER.md) |
+| End-to-end trace | [`examples/design-token-export-trace.md`](examples/design-token-export-trace.md) |
+| Optional verifier | [`scripts/spine-doctor`](scripts/spine-doctor) |
+
+### 13.1 Minimal layout
 
 ```other
 repo-root/
@@ -835,7 +698,7 @@ repo-root/
    └─ HANDOFF.md
 ```
 
-### Recommended layout for long-running software projects
+### 13.2 Long-running software profile
 
 ```other
 repo-root/
@@ -847,727 +710,103 @@ repo-root/
 │  ├─ QUALITY_BAR.md
 │  ├─ STATUS.md
 │  └─ tasks/
-│     └─ T-0001.example.md
-└─ .agents/
-   └─ skills/
-      ├─ context-refresh/
-      │  └─ SKILL.md
-      ├─ work-order/
-      │  └─ SKILL.md
-      ├─ implementation-loop/
-      │  └─ SKILL.md
-      ├─ doc-sync/
-      │  └─ SKILL.md
-      ├─ quality-review/
-      │  └─ SKILL.md
-      └─ handoff-report/
-         └─ SKILL.md
-```
-
-### Extended layout
-
-```other
-repo-root/
-├─ AGENTS.md
-├─ ai-state/
-│  ├─ PROJECT_CHARTER.md
-│  ├─ CURRENT_STATE.md
-│  ├─ DECISIONS.md
-│  ├─ HANDOFF.md
-│  ├─ QUALITY_BAR.md
-│  ├─ STATUS.md
-│  ├─ PROGRESS_LOG.md
-│  ├─ DRAFT.md
-│  └─ tasks/
 └─ .agents/
    └─ skills/
 ```
 
-Use the extended layout only when the project has recurring need for it.
+Use only the optional artifacts that prevent a repeated failure.
+
+### 13.3 Protocol version and migration
+
+Version 2 retains the Spine Four and adds no default state file.
+
+To migrate from v1:
+
+1. add capability-versus-authority, freshness, writer, external-effect, and unattended-work rules to `AGENTS.md`;
+2. add canonical identity, revision, source freshness, and automation profile to `CURRENT_STATE.md`;
+3. turn `HANDOFF.md` into a cross-boundary checkpoint;
+4. add `Accepted` and an authority envelope to work orders;
+5. synchronize only the prompts, skills, and adapters the project uses.
+
+The optional doctor treats an installation without a protocol marker as v1 and recommends review. A v2 marker makes the new structural checks applicable. Passing the doctor remains mechanical hygiene only.
+
+### 13.4 Adoption profiles
+
+The starter installs the Spine Four in every target project for predictability. A human may deliberately reduce the active surface for a short or non-software project, but that is an adaptation after setup, not a different default installer contract.
+
+- **Solo, short:** keep only the fields that prevent an actual recovery or authority failure.
+- **Solo, long-running software:** Spine Four plus work orders; add a quality bar when drift repeats.
+- **Small product team:** add reviewed status projection and explicit integration ownership.
+- **Multi-agent or stakeholder-heavy:** use isolated lanes, single-writer state ownership, and an auditable progress log when justified.
+- **Non-repository knowledge work:** designate a canonical artifact store, revision or capture time, acceptance state, and sync-back owner.
+
+### 13.5 Status surfaces
+
+`STATUS.md` or a web dashboard is a projection for humans, never a decision or authority surface. It should identify its source revision and last update. If it contradicts `CURRENT_STATE.md`, the projection is wrong. Remove or mark it stale if it cannot be maintained.
+
+### 13.6 Domain packs
+
+A domain pack extends quality and validation criteria without creating another state system.
+
+- **Software:** build, tests, type safety, migrations, dependencies, CI, release, observability, and architecture decisions.
+- **Design:** hierarchy, interaction states, responsive behavior, accessibility in use, visual rhythm, brand intent, localization, and cultural risk.
+- **Research:** source quality, freshness, contradiction handling, citation discipline, uncertainty, claim strength, and reproducibility.
+- **Content and brand:** voice, audience, naming, localization, public claims, legal review, and publication readiness.
+
+### 13.7 Release checks for this starter kit
+
+At minimum:
+
+- local templates and streamed installer output match;
+- the default install creates only the Spine Four;
+- existing files are not overwritten;
+- v1 is migration-warned rather than silently misclassified as v2;
+- v2 templates pass doctor structural checks;
+- links and referenced paths exist;
+- no root live `ai-state/` is tracked in this distributable repository;
+- validation results remain honest.
 
 ---
 
-## `AGENTS.md` Template
+## 14. Conclusion
 
-```other
-# AGENTS.md
+Context Spine is not a request for agents to remember more. It is a workflow specification for making canonical state, task scope, authority, evidence, and continuation explicit across task, agent, surface, host, context, and automation boundaries.
 
-## Purpose
-This repository uses Context Spine. The repository state, not chat history, is the source of truth.
+The method should be judged by local operational outcomes: whether actors recover the correct revision and authority, whether work remains bounded, whether source freshness and external effects are visible, whether parallel writes stay coherent, whether automation stops safely, and whether continuity survives context loss.
 
-## Read order
-1. ai-state/HANDOFF.md
-2. ai-state/CURRENT_STATE.md
-3. active task file in ai-state/tasks/, if provided
-4. relevant decisions in ai-state/DECISIONS.md
-5. ai-state/QUALITY_BAR.md, if the task affects quality, UI, product, research, content, or brand
-
-## Working rules
-- Stay inside the task scope.
-- Ask before changing hard-stop areas.
-- Do not add dependencies without approval.
-- Prefer small diffs.
-- Do not perform opportunistic refactors unless requested.
-- Do not treat DRAFT.md as source of truth.
-- Do not rely on tool memory or auto-memory for required team rules.
-- Before preparing next operational steps, check whether required human input is missing.
-- Human input may be intent, source material, constraints, preferences, priorities, research direction, acceptance criteria, scope boundary, files, examples, or a decision.
-- If missing input affects hard-stop areas, scope, quality, or project identity, ask before proceeding.
-- Do not turn missing input into assumptions or premature next steps.
-
-## Hard-stop areas
-Ask before changing:
-- auth, permissions, account recovery;
-- billing, pricing, payments, credits;
-- database schema, migrations, destructive data operations;
-- privacy, analytics tracking, retention policy;
-- secrets, keys, tokens, sandbox permissions, external access;
-- legal notices, compliance, licensing, public claims;
-- accessibility requirements;
-- internationalization, localization, naming, market-specific UX;
-- brand identity, design-system foundations;
-- production infrastructure, CI, deployment, observability;
-- new dependencies or major dependency upgrades.
-
-## Validation
-Run the checks relevant to the task.
-
-Default software checks:
-- npm run lint
-- npm run typecheck
-- npm test
-
-Report every check as Passed, Failed, or Not run.
-
-## Doc-sync
-- Update HANDOFF.md after meaningful work.
-- Update CURRENT_STATE.md when current truth changes.
-- Append to DECISIONS.md for durable decisions.
-- Update the active task file when status changes.
-- If no state document changes, report why.
-
-## Final report
-Use this structure:
-
-### Work performed
-
-### Files changed
-
-### Validated
-Passed:
-Failed:
-Not run:
-
-### State updated
-
-### Decisions
-
-### Needs human input
-
-### Next
-```
-
----
-
-## `ai-state/CURRENT_STATE.md` Template
-
-```other
-# Current State
-
-## One-line summary
-
-## Current product behavior
-
-## Current architecture
-
-## Implemented
-
-## Intentionally not implemented
-
-## Active constraints
-
-## Known risks
-
-## Last verified
-
-## Related decisions
-```
-
----
-
-## `ai-state/DECISIONS.md` Template
-
-```other
-# Decisions
-
-## D-0001: Use inline export preview
-
-Date: YYYY-MM-DD  
-Status: Proposed | Accepted | Superseded | Rejected  
-Supersedes: none  
-Superseded by: none
-
-### Context
-
-### Decision
-
-### Consequences
-
-### Alternatives considered
-```
-
----
-
-## `ai-state/HANDOFF.md` Template
-
-```other
-# Handoff
-
-## Current focus
-
-## Last completed
-
-## Next action
-
-## Blockers
-
-## Needs human input
-
-## Validation
-Passed:
-Failed:
-Not run:
-
-## Files or areas touched
-
-## Notes for next session
-```
-
----
-
-## Work Order Template
-
-```other
-# T-0000: Title
-
-## Status
-Proposed | Active | Blocked | Done | Superseded
-
-## Goal
-
-## Non-goals
-
-## Must read
-- AGENTS.md
-- ai-state/CURRENT_STATE.md
-- ai-state/HANDOFF.md
-
-## Scope
-Allowed:
-
-Forbidden:
-
-## Ambiguities
-Ask before implementation if:
-
-Safe assumptions:
-
-## Plan
-1.
-2.
-3.
-
-## Validation
-- npm run lint
-- npm run typecheck
-- npm test
-
-## Done when
-- implementation is complete;
-- validation results are recorded;
-- state documents are updated;
-- handoff is updated.
-
-## State impact
-Expected updates:
-- [ ] CURRENT_STATE.md
-- [ ] DECISIONS.md
-- [ ] HANDOFF.md
-- [ ] STATUS.md
-- [ ] none, because: ...
-```
-
----
-
-## Validation Log Template
-
-```other
-# Validation Log
-
-Task: T-0000  
-Date: YYYY-MM-DD  
-Agent/session:  
-Commit/branch:
-
-## Passed
-- `npm run lint` — passed
-
-## Failed
-- `npm test` — failed: reason and failing test
-
-## Not run
-- mobile browser check — not run because local browser tool was unavailable
-
-## Notes
-- Do not infer that Not run means Passed.
-```
-
----
-
-## End-to-End Sample Trace
-
-This trace shows one task moving through Context Spine from request to handoff. It is illustrative, not an additional required artifact.
-
-### 1. User request
-
-```other
-Add a preview before users download the design token export. Keep it small. Do not change the token schema.
-```
-
-### 2. Work order excerpt
-
-```other
-# T-0007: Add export preview for design tokens
-
-## Goal
-Show the exact export payload before download.
-
-## Non-goals
-- Do not redesign the token editor.
-- Do not change the token schema.
-- Do not add a new UI library.
-
-## Scope
-Allowed:
-- app/export/**
-- components/export-preview/**
-
-Forbidden:
-- auth/**
-- billing/**
-- database migrations
-
-## Validation
-- npm run lint
-- npm run typecheck
-- npm test
-- manual check at 375px width
-```
-
-### 3. Implementation report excerpt
-
-```other
-## Work performed
-- Added `ExportPreviewPanel`.
-- Wired preview data to the existing export payload generator.
-- Preserved the existing token schema.
-
-## Files changed
-- app/export/page.tsx
-- components/export-preview/ExportPreviewPanel.tsx
-- components/export-preview/ExportPreviewPanel.test.tsx
-```
-
-### 4. Validation record
-
-```other
-## Validated
-Passed:
-- npm run lint
-- npm run typecheck
-- npm test
-
-Failed:
-- none
-
-Not run:
-- manual 375px browser check — local browser was unavailable in this session
-```
-
-### 5. Doc-sync result
-
-```other
-State updated:
-- ai-state/CURRENT_STATE.md — export flow now includes payload preview
-- ai-state/HANDOFF.md — next session should manually check 375px viewport
-- ai-state/tasks/T-0007.md — status changed to Done
-
-No DECISIONS.md entry was added because the schema and architecture did not change.
-```
-
-### 6. Handoff excerpt
-
-```other
-## Current focus
-Export preview is implemented; mobile visual verification remains open.
-
-## Last completed
-T-0007 added an export payload preview without changing token schema.
-
-## Next action
-Run manual browser verification at 375px and decide whether the preview needs copy refinement.
-
-## Validation
-Passed:
-- lint
-- typecheck
-- tests
-
-Not run:
-- 375px browser check
-```
-
-The trace is complete because the implementation, validation evidence, state update, and next-session handoff all point to the same task.
-
----
-
-## Skill Specifications
-
-Skills should be short, procedural, and trigger-specific. They should not store project facts.
-
-`SKILL.md` is an Agent Skills open format supported across multiple agent clients. The examples below use the shared pattern; directory placement may need to adapt to the specific tool.
-
-### `context-refresh/SKILL.md`
-
-```other
----
-name: context-refresh
-description: Restore project state from Context Spine files before planning or implementation.
----
-
-# Context Refresh
-
-Use when starting a new session or resuming a task.
-
-Steps:
-1. Read AGENTS.md.
-2. Read ai-state/HANDOFF.md.
-3. Read ai-state/CURRENT_STATE.md.
-4. Read the active task file, if named.
-5. Read only relevant decisions.
-6. Report current state, next action, blockers, and contradictions.
-
-Stop if state files contradict each other in a hard-stop area.
-```
-
-### `work-order/SKILL.md`
-
-```other
----
-name: work-order
-description: Convert a broad or risky request into a bounded Context Spine work order.
----
-
-# Work Order
-
-Use when a request is ambiguous, risky, multi-file, or likely to affect durable state.
-
-Before producing the work order, identify missing user inputs. If the task cannot be responsibly scoped without them, ask first instead of drafting the work order.
-
-Output a task file with goal, non-goals, scope, ambiguities, validation, done conditions, and expected state impact.
-
-Do not implement during this skill unless explicitly instructed.
-```
-
-### `implementation-loop/SKILL.md`
-
-```other
----
-name: implementation-loop
-description: Implement an accepted work order in small diffs with validation and state sync.
----
-
-# Implementation Loop
-
-Steps:
-1. Confirm active work order.
-2. Identify allowed and forbidden paths.
-3. Make the smallest useful change.
-4. Run relevant validation.
-5. Fix failures inside scope.
-6. Stop on hard-stop conflicts.
-7. Prepare doc-sync.
-```
-
-### `doc-sync/SKILL.md`
-
-```other
----
-name: doc-sync
-description: Update Context Spine state files after meaningful project changes.
----
-
-# Doc Sync
-
-Decide which files need updates:
-- CURRENT_STATE.md for current truth.
-- DECISIONS.md for durable decisions.
-- HANDOFF.md for next session continuity.
-- active task file for status.
-- STATUS.md for stakeholder visibility.
-- PROGRESS_LOG.md only when audit history is useful.
-
-If no state file changes, explain why.
-```
-
-### `quality-review/SKILL.md`
-
-```other
----
-name: quality-review
-description: Review output against Context Spine quality criteria and domain standards.
----
-
-# Quality Review
-
-Use a fresh review posture.
-
-Check correctness, scope, validation evidence, UX edge states, accessibility, visual or brand consistency, localization risk, source quality, and state accuracy as relevant.
-
-Return one of:
-- ready;
-- needs revision;
-- blocked;
-- blocked by missing user input.
-
-If blocked by missing user input, name the missing input and the natural question to ask.
-```
-
-### `handoff-report/SKILL.md`
-
-```other
----
-name: handoff-report
-description: Update HANDOFF.md and produce the final human-readable report.
----
-
-# Handoff Report
-
-Update HANDOFF.md with current focus, last completed work, next action, blockers, human decisions, missing human input, validation, files touched, and notes.
-
-Include missing human input separately from routine next action when applicable. If next work is blocked by missing user input, make that clear.
-
-Then report work performed, validation status, state updated, decisions, human input needed, and next action.
-```
-
----
-
-## Status Surface Template
-
-`STATUS.md` is optional. It is for humans, not agents. It should be readable in under 30 seconds.
-
-```other
-# Project Status
-
-## One-line status
-
-## Current milestone
-
-## Done recently
-
-## In progress
-
-## Blocked
-
-## Needs human input
-
-## Recent decisions
-
-## Validation status
-
-## Next three actions
-```
-
-A status surface should be a projection of state, not a second source of truth.
-
----
-
-### Shared Web Status Surface
-
-A shared web status surface is optional. It exists for humans who need to understand project state without reading the full repository.
-
-It should be generated from checked-in Context Spine artifacts, usually `ai-state/STATUS.md`, `ai-state/CURRENT_STATE.md`, `ai-state/HANDOFF.md`, selected recent decisions from `ai-state/DECISIONS.md`, and active work orders.
-
-The web surface is not a source of truth. It is a projection.
-
-Recommended fields:
-
-- one-line project status;
-- current milestone;
-- recently completed work;
-- active work;
-- blockers;
-- human input needed;
-- recent decisions;
-- validation status;
-- next three actions;
-- source revision or generated-from commit;
-- last generated or last updated time;
-- links to relevant tasks, decisions, branches, pull requests, or artifacts.
-
-Recommended publishing options:
-
-- GitHub Pages for public or open-source repositories;
-- Vercel, Netlify, or Cloudflare Pages for private static dashboards;
-- an internal docs site for team-only access;
-- a local preview for solo projects that do not need sharing.
-
-Rules:
-
-- Do not expose secrets, private customer data, internal commercial terms, unreleased metrics, or sensitive screenshots.
-- If the dashboard is public, assume every word is externally visible.
-- If stakeholder status changes, update `ai-state/STATUS.md` or the generated status source during doc-sync.
-- If the dashboard contradicts `ai-state/CURRENT_STATE.md`, the dashboard is wrong.
-- If the dashboard cannot be kept fresh, remove it or mark it stale.
-- The dashboard must not authorize implementation, product, design, legal, or business decisions. Decisions belong in checked-in state documents.
-
----
-
-## Adoption Profiles
-
-### Solo, short project
-
-Use:
-
-```other
-AGENTS.md
-ai-state/HANDOFF.md
-```
-
-Do not create the full system. For a one-off non-software task where no repository operating contract is useful, substitute this software-oriented default with the smallest explicit state surface, such as `CURRENT_STATE.md` plus `HANDOFF.md`.
-
-### Solo, long-running software project
-
-Use:
-
-```other
-AGENTS.md
-ai-state/CURRENT_STATE.md
-ai-state/DECISIONS.md
-ai-state/HANDOFF.md
-ai-state/tasks/
-```
-
-Add `QUALITY_BAR.md` when quality issues repeat.
-
-### Small product team
-
-Use:
-
-```other
-AGENTS.md
-ai-state/CURRENT_STATE.md
-ai-state/DECISIONS.md
-ai-state/HANDOFF.md
-ai-state/tasks/
-ai-state/QUALITY_BAR.md
-ai-state/STATUS.md
-```
-
-Review state changes in PRs.
-
-### Multi-agent or stakeholder-heavy project
-
-Use the extended layout, but assign state ownership clearly. Multiple agents should not freely overwrite `CURRENT_STATE.md` or `HANDOFF.md` without a merge rule.
-
----
-
-## Domain Pack Sketches
-
-### Software Pack
-
-Add criteria for build, tests, type safety, error states, migration policy, dependency policy, CI, release, observability, and architecture decisions.
-
-### Design Pack
-
-Add criteria for hierarchy, interaction states, responsive behavior, accessibility in use, visual rhythm, brand intent, component coherence, localization, and cultural risk.
-
-#### Design Pack sample
-
-A design pack should usually extend `QUALITY_BAR.md` and work orders rather than create a parallel state system.
-
-`ai-state/QUALITY_BAR.md` excerpt:
-
-```other
-## Design quality criteria
-- The screen has a clear primary action and a visible secondary escape path.
-- Empty, loading, error, disabled, and success states are specified.
-- Visual hierarchy is explainable through information priority, not decoration.
-- Accessibility is checked in actual use: focus order, contrast, labels, hit area, and keyboard path.
-- Brand tone is present but does not obscure comprehension.
-- Localization risk is reviewed for text length, naming, symbols, humor, and market-specific UX expectations.
-```
-
-Design work order excerpt:
-
-```other
-## Goal
-Redesign the export preview empty state so first-time users understand why no token groups appear.
-
-## Non-goals
-- Do not redesign the export flow.
-- Do not change token grouping logic.
-- Do not introduce illustration unless it explains the state better than text.
-
-## Validation
-- 375px and desktop viewport review
-- keyboard focus path check
-- contrast check for primary and secondary text
-- copy review for English and Korean length
-- fresh-context design review against QUALITY_BAR.md
-```
-
-If design rationale repeatedly gets lost, record durable visual decisions in `DECISIONS.md` before adding a new design-specific state document.
-
-### Research Pack
-
-Add criteria for source quality, freshness, contradiction handling, citation discipline, uncertainty labels, claim strength, and reproducibility.
-
-### Content and Brand Pack
-
-Add criteria for voice, audience, naming, localization risk, public claims, legal review, and publication readiness.
-
-A domain pack should be a small set of criteria, not a second methodology.
-
----
-
-## Practical Starting Point
-
-Create the Spine Four and use them for five meaningful tasks.
-
-Do not judge the system by whether the documents look complete. Judge it by whether the next session can recover state without asking the human to reconstruct the project again.
+Create the Spine Four and use them for real work. Do not judge the method by whether the documents look complete. Judge it by whether it prevents enough drift to justify its cost.
 
 ---
 
 ## References
 
-- AGENTS.md. “AGENTS.md.” [https://agents.md/](https://agents.md/). A shared convention for repository-level instructions for coding agents.
-- OpenAI Developers. “Custom instructions with AGENTS.md.” [https://developers.openai.com/codex/guides/agents-md](https://developers.openai.com/codex/guides/agents-md). Reference for Codex repository guidance and layered instruction behavior.
-- OpenAI Developers. “Agent Skills.” [https://developers.openai.com/codex/skills](https://developers.openai.com/codex/skills). Reference for `SKILL.md` packaging and progressive disclosure.
-- OpenAI Developers. “Memories.” [https://developers.openai.com/codex/memories](https://developers.openai.com/codex/memories). Reference for the distinction between local recall and required checked-in team guidance.
-- Michael Nygard. “Documenting Architecture Decisions.” [https://www.cognitect.com/blog/2011/11/15/documenting-architecture-decisions](https://www.cognitect.com/blog/2011/11/15/documenting-architecture-decisions). Precedent for recording decision context, rationale, and consequences.
-- ADR GitHub Organization. “Architectural Decision Records.” [https://adr.github.io/](https://adr.github.io/). Reference hub for ADR practice.
-- MADR. “Markdown Architectural Decision Records.” [https://adr.github.io/madr/](https://adr.github.io/madr/). Precedent for structured markdown decision records and supersession.
-- Diátaxis. “Diátaxis.” [https://diataxis.fr/](https://diataxis.fr/). Reference for separating documentation by user need and document role.
-- Cline. “Memory Bank.” [https://docs.cline.bot/best-practices/memory-bank](https://docs.cline.bot/best-practices/memory-bank). Related memory-bank pattern for preserving agent context across sessions.
-- GitHub. “Spec Kit.” [https://github.com/github/spec-kit](https://github.com/github/spec-kit). Related spec-driven workflow for moving from natural-language intent to plans and tasks.
-- Amazon Web Services. “Kiro documentation overview.” [https://aws.amazon.com/documentation-overview/kiro/](https://aws.amazon.com/documentation-overview/kiro/). Related agentic development workflow for specs, steering, and task execution.
-- Gloaguen, Mündler, Müller, Raychev, and Vechev. “Evaluating AGENTS.md: Are Repository-Level Context Files Helpful for Coding Agents?” [https://arxiv.org/abs/2602.11988](https://arxiv.org/abs/2602.11988). Finds that repository-level context files do not generally improve task success and increase inference cost by over 20% on average; the authors recommend that human-written context files describe only minimal requirements.
-- Anthropic. “How Claude remembers your project.” [https://code.claude.com/docs/en/memory](https://code.claude.com/docs/en/memory). Reference for `CLAUDE.md`, `.claude/rules/`, auto memory, and the difference between loaded context and enforced policy.
-- Anthropic. “Effective harnesses for long-running agents.” [https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents). Related long-running agent pattern using session artifacts such as `claude-progress.txt` and git history.
-- Anthropic. “Effective context engineering for AI agents.” [https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents). Reference for treating context as a finite attention budget and selecting high-signal tokens.
-- HumanLayer. “12-Factor Agents.” [https://github.com/humanlayer/12-factor-agents](https://github.com/humanlayer/12-factor-agents). Related agent design principles for owning the context window, unifying execution state and business state, and stateless reduction.
-- Agent Skills. “Agent Skills Overview.” [https://agentskills.io/home](https://agentskills.io/home). Reference for the open `SKILL.md` format and cross-client skill packaging.
-- Linux Foundation. “Linux Foundation Announces the Formation of the Agentic AI Foundation.” [https://www.linuxfoundation.org/press/linux-foundation-announces-the-formation-of-the-agentic-ai-foundation](https://www.linuxfoundation.org/press/linux-foundation-announces-the-formation-of-the-agentic-ai-foundation). Governance context for AGENTS.md, MCP, goose, and the Agentic AI Foundation.
-- Anthropic. “Automate actions with hooks.” [https://code.claude.com/docs/en/hooks-guide](https://code.claude.com/docs/en/hooks-guide). Reference for using lifecycle hooks as deterministic automation around agent behavior.
-- Anthropic. “Configure permissions.” [https://code.claude.com/docs/en/permissions](https://code.claude.com/docs/en/permissions). Reference for permission rules and `PreToolUse` hooks that can deny, prompt, or block tool calls.
+- AGENTS.md. “AGENTS.md.” [https://agents.md/](https://agents.md/).
+- OpenAI. “Custom instructions with AGENTS.md.” [https://learn.chatgpt.com/docs/agent-configuration/agents-md](https://learn.chatgpt.com/docs/agent-configuration/agents-md).
+- OpenAI. “Skills and Plugins.” [https://learn.chatgpt.com/docs/skills-and-plugins](https://learn.chatgpt.com/docs/skills-and-plugins).
+- OpenAI. “Memories.” [https://learn.chatgpt.com/docs/customization/memories](https://learn.chatgpt.com/docs/customization/memories).
+- OpenAI. “Projects, chats, and tasks.” [https://learn.chatgpt.com/docs/projects](https://learn.chatgpt.com/docs/projects).
+- OpenAI. “Long-running work.” [https://learn.chatgpt.com/docs/long-running-work](https://learn.chatgpt.com/docs/long-running-work).
+- OpenAI. “Subagents.” [https://learn.chatgpt.com/docs/agent-configuration/subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents).
+- OpenAI. “Codex environments.” [https://learn.chatgpt.com/docs/environments/modes](https://learn.chatgpt.com/docs/environments/modes).
+- OpenAI. “Git worktrees.” [https://learn.chatgpt.com/docs/environments/git-worktrees](https://learn.chatgpt.com/docs/environments/git-worktrees).
+- OpenAI. “Cloud environment.” [https://learn.chatgpt.com/docs/environments/cloud-environment](https://learn.chatgpt.com/docs/environments/cloud-environment).
+- OpenAI. “Remote connections.” [https://learn.chatgpt.com/docs/remote-connections](https://learn.chatgpt.com/docs/remote-connections).
+- OpenAI. “Scheduled tasks.” [https://learn.chatgpt.com/docs/automations](https://learn.chatgpt.com/docs/automations).
+- OpenAI. “Agent approvals and security.” [https://learn.chatgpt.com/docs/agent-approvals-security](https://learn.chatgpt.com/docs/agent-approvals-security).
+- OpenAI. “Hooks.” [https://learn.chatgpt.com/docs/hooks](https://learn.chatgpt.com/docs/hooks).
+- OpenAI. “ChatGPT is now a partner for your most ambitious work.” 2026-07-09. [https://openai.com/index/chatgpt-for-your-most-ambitious-work/](https://openai.com/index/chatgpt-for-your-most-ambitious-work/).
+- OpenAI. “GPT-5.6: Frontier intelligence that scales with your ambition.” 2026-07-09. [https://openai.com/index/gpt-5-6/](https://openai.com/index/gpt-5-6/).
+- OpenAI. “GPT-5.6 System Card.” 2026-07-09. [https://deploymentsafety.openai.com/gpt-5-6](https://deploymentsafety.openai.com/gpt-5-6).
+- Michael Nygard. “Documenting Architecture Decisions.” [https://www.cognitect.com/blog/2011/11/15/documenting-architecture-decisions](https://www.cognitect.com/blog/2011/11/15/documenting-architecture-decisions).
+- ADR GitHub Organization. “Architectural Decision Records.” [https://adr.github.io/](https://adr.github.io/).
+- MADR. “Markdown Architectural Decision Records.” [https://adr.github.io/madr/](https://adr.github.io/madr/).
+- Diátaxis. “Diátaxis.” [https://diataxis.fr/](https://diataxis.fr/).
+- Cline. “Memory Bank.” [https://docs.cline.bot/best-practices/memory-bank](https://docs.cline.bot/best-practices/memory-bank).
+- GitHub. “Spec Kit.” [https://github.com/github/spec-kit](https://github.com/github/spec-kit).
+- Amazon Web Services. “Kiro documentation overview.” [https://aws.amazon.com/documentation-overview/kiro/](https://aws.amazon.com/documentation-overview/kiro/).
+- Gloaguen, Mündler, Müller, Raychev, and Vechev. “Evaluating AGENTS.md: Are Repository-Level Context Files Helpful for Coding Agents?” [https://arxiv.org/abs/2602.11988](https://arxiv.org/abs/2602.11988).
+- Anthropic. “How Claude remembers your project.” [https://code.claude.com/docs/en/memory](https://code.claude.com/docs/en/memory).
+- Anthropic. “Effective harnesses for long-running agents.” [https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents).
+- Anthropic. “Effective context engineering for AI agents.” [https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents).
+- HumanLayer. “12-Factor Agents.” [https://github.com/humanlayer/12-factor-agents](https://github.com/humanlayer/12-factor-agents).
+- Agent Skills. “Agent Skills Overview.” [https://agentskills.io/home](https://agentskills.io/home).

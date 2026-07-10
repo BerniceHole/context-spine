@@ -40,8 +40,18 @@ if [[ -n "${SCRIPT_SOURCE}" && -e "${SCRIPT_SOURCE}" ]]; then
   fi
 fi
 
-# Avoid accidentally installing live state into this public starter repository itself.
-if [[ "${HAS_LOCAL_TEMPLATES}" == "true" && "${TARGET_ABS}" == "${SCRIPT_DIR}" ]]; then
+# Avoid accidentally installing live state into this public starter repository itself,
+# including when the installer is streamed and has no local script path.
+IS_STARTER_REPOSITORY="false"
+if [[ -f "${TARGET_ABS}/README.md" \
+  && -f "${TARGET_ABS}/RESEARCH.md" \
+  && -f "${TARGET_ABS}/templates/minimal/AGENTS.md" \
+  && -f "${TARGET_ABS}/chatgpt/PROJECT_INSTRUCTIONS.md" \
+  && -f "${TARGET_ABS}/scripts/spine-doctor" ]]; then
+  IS_STARTER_REPOSITORY="true"
+fi
+
+if [[ "${IS_STARTER_REPOSITORY}" == "true" ]]; then
   echo "Refusing to install root ai-state into the context-spine starter repository itself." >&2
   echo "Choose a target project directory instead." >&2
   exit 1
@@ -78,13 +88,17 @@ if ! copy_or_write "${TEMPLATE_DIR}/AGENTS.md" "${TARGET_ABS}/AGENTS.md" "local 
   write_file_if_missing "${TARGET_ABS}/AGENTS.md" "embedded template" <<'EOF'
 # AGENTS.md
 
+Protocol version: 2
+
 ## Purpose
 
-This repository uses Context Spine. The repository state, not chat history, is the source of truth.
+This repository uses Context Spine. The checked-in repository state and explicitly accepted project artifacts are the canonical project state. Chat history, task transcripts, project context, caches, and generated memory are recall layers unless an accepted project artifact promotes their contents.
 
-Context Spine adds a small operating layer for project state, decisions, handoff, validation, and agent behavior. It does not replace the target project’s product structure, documentation architecture, design system, roadmap, information architecture, brand system, or domain model.
+Context Spine adds a small operating layer for canonical state, task contracts, authority, execution evidence, continuity, and agent behavior. It does not replace the target project’s product structure, documentation architecture, design system, roadmap, information architecture, brand system, or domain model.
 
 ## Read order
+
+After applicable environment instructions and this file are loaded:
 
 1. `ai-state/HANDOFF.md`
 2. `ai-state/CURRENT_STATE.md`
@@ -92,15 +106,26 @@ Context Spine adds a small operating layer for project state, decisions, handoff
 4. relevant entries in `ai-state/DECISIONS.md`
 5. `ai-state/QUALITY_BAR.md`, if present and the task affects quality, UI, product, research, content, or brand
 
+This is recovery order, not authority priority. Use `HANDOFF.md` to locate the work, then verify it against `CURRENT_STATE.md`, the accepted work order, and accepted decisions.
+
 ## Working rules
 
+- Confirm the canonical project identity, revision or snapshot, and source freshness before acting.
+- Treat tool access, sandbox permission, and platform capability as technical access, not as project authorization.
 - Stay inside the task scope.
-- Ask before changing hard-stop areas.
+- Require an accepted work order before implementation when work is broad or materially ambiguous, touches a hard-stop area, authorizes external, irreversible, or cost-bearing effects, enables unattended writes, or permits multiple writers. A multi-file change alone does not require one.
+- Ask before changing hard-stop areas unless the current request or accepted work order explicitly authorizes the exact change.
+- If approval is required and no approval channel is available, stop safely and report the blocker.
 - Do not add dependencies without approval.
 - Prefer small diffs.
 - Do not perform opportunistic refactors unless requested.
 - Do not treat draft or scratch files as source of truth.
 - Do not rely on tool memory or auto-memory for required project rules.
+- Parallelize independent read-only work when useful. Serialize writes to the same files or state surface.
+- Give each writable artifact one active writer and name the integration owner when work is parallel.
+- Record external side effects, including app, connector, browser, deployment, publication, billing, and remote-system changes.
+- A handoff or continuity checkpoint records authority; it does not create, broaden, or renew authority.
+- For unattended work, define the trigger, allowed effects, overlap policy, retry or idempotency rule, stop condition, and result owner before enabling writes.
 - Do not copy secrets, credentials, customer data, private logs, private URLs, or personal data into state files.
 - Do not redesign the target project’s docs, roadmap, architecture, design system, brand system, or domain model unless explicitly asked.
 - Before preparing next operational steps, check whether required human input is missing.
@@ -112,7 +137,7 @@ Context Spine adds a small operating layer for project state, decisions, handoff
 
 ## Hard-stop areas
 
-Ask before changing:
+Request current approval before changing the following unless the exact change is already authorized. If no approval channel is available, stop safely:
 
 - authentication, authorization, permissions, account recovery;
 - billing, pricing, payments, credits, subscriptions;
@@ -125,7 +150,7 @@ Ask before changing:
 - brand identity, tone, naming, visual language, design-system foundations;
 - production infrastructure, CI, deployment, observability;
 - new dependencies or major dependency upgrades;
-- irreversible deletion, overwrite, or migration;
+- irreversible deletion, overwrite, migration, publication, or external communication;
 - contradictory instructions among user request, work order, state, and decisions.
 
 ## Validation
@@ -144,8 +169,9 @@ Report every check as `Passed`, `Failed`, or `Not run`.
 
 ## Doc-sync
 
-- Update `ai-state/HANDOFF.md` after meaningful work.
+- Update `ai-state/HANDOFF.md` after meaningful work and before a task, agent, surface, host, context, or automation boundary.
 - Update `ai-state/CURRENT_STATE.md` when current truth changes.
+- Reconcile canonical revision, source freshness, automation profile, and external effects when they change.
 - Append to `ai-state/DECISIONS.md` for durable decisions.
 - Update the active task file when task status changes.
 - If no state document changes, report why.
@@ -154,9 +180,13 @@ Report every check as `Passed`, `Failed`, or `Not run`.
 
 Use this structure:
 
+### Execution context
+
 ### Work performed
 
 ### Files changed
+
+### External effects
 
 ### Validated
 
@@ -178,9 +208,18 @@ if ! copy_or_write "${TEMPLATE_DIR}/ai-state/CURRENT_STATE.md" "${TARGET_ABS}/ai
   write_file_if_missing "${TARGET_ABS}/ai-state/CURRENT_STATE.md" "embedded template" <<'EOF'
 # Current State
 
+Protocol version: 2
+
 ## One-line summary
 
 Unknown.
+
+## Canonical project identity
+
+- State surface: Unknown.
+- Project or repository: Unknown.
+- Revision or snapshot: Unknown.
+- Last reconciled: Unknown.
 
 ## Current product behavior
 
@@ -201,6 +240,17 @@ Unknown.
 ## Active constraints
 
 Unknown.
+
+## External state and source freshness
+
+- Source: Unknown.
+- Revision or captured at: Unknown.
+- Freshness checked: Unknown.
+- Canonical or advisory: Unknown.
+
+## Automation profile
+
+Manual — no unattended actions or external writes are authorized.
 
 ## Known risks
 
@@ -231,7 +281,7 @@ Superseded by: none
 
 ### Context
 
-The project is adopting Context Spine so future AI sessions can recover project state from repository files instead of chat history.
+The project is adopting Context Spine so work can recover canonical state across task, agent, surface, host, context, and automation boundaries instead of relying on conversation history alone.
 
 ### Decision
 
@@ -245,6 +295,9 @@ Use the Spine Four as the minimal starting structure:
 ### Consequences
 
 - State documents must stay short, current, and operational.
+- Task authority, execution evidence, and continuity checkpoints must remain tied to the current project revision.
+- Automation defaults to `Manual`; unattended work requires a task-specific authority envelope.
+- A handoff records authority but does not create, broaden, or renew it.
 - Optional documents should be added only when they prevent a repeated failure.
 - Validation must be reported as `Passed`, `Failed`, or `Not run`.
 
@@ -258,6 +311,19 @@ fi
 if ! copy_or_write "${TEMPLATE_DIR}/ai-state/HANDOFF.md" "${TARGET_ABS}/ai-state/HANDOFF.md" "local template"; then
   write_file_if_missing "${TARGET_ABS}/ai-state/HANDOFF.md" "embedded template" <<'EOF'
 # Handoff
+
+Protocol version: 2
+
+This file is a continuity checkpoint, not a chat summary and not a grant of new authority.
+
+## Continuity context
+
+- Boundary: initial setup.
+- Canonical project or repository: Unknown.
+- Revision, branch, or snapshot: Unknown.
+- Active task or run: None.
+- Surface and execution host: Unknown.
+- Continuation method: restore from the canonical state surface.
 
 ## Current focus
 
@@ -275,6 +341,14 @@ Fill `CURRENT_STATE.md` with repository evidence and choose the next meaningful 
 
 Unknown.
 
+## Authority and write ownership
+
+- Authority source and status: initial setup only.
+- Allowed mutations: Context Spine setup files only.
+- Pending approvals: project-specific work.
+- Active state writer or integrator: Unknown.
+- Isolation: Unknown.
+
 ## Needs human input
 
 - Confirm project goal, non-goals, and immediate next task.
@@ -286,6 +360,10 @@ Failed:
 Not run:
 - Project-specific validation has not been run yet.
 
+## External side effects
+
+None recorded.
+
 ## Files or areas touched
 
 - `AGENTS.md`
@@ -293,9 +371,9 @@ Not run:
 - `ai-state/DECISIONS.md`
 - `ai-state/HANDOFF.md`
 
-## Notes for next session
+## Notes for next continuation
 
-Use `AGENTS.md` and these state files as the source of truth. Do not rely on chat history.
+Use `AGENTS.md` and these state files as the canonical project state. Reconfirm the current revision and authority before acting; do not rely on chat history alone.
 EOF
 fi
 
@@ -306,6 +384,6 @@ ${TARGET_ABS}
 
 Next:
 1. Fill ai-state/CURRENT_STATE.md from repository evidence.
-2. Confirm the next meaningful task in ai-state/HANDOFF.md.
-3. Start a fresh AI session with the resume prompt.
+2. Record the canonical revision, authority, and next meaningful task in ai-state/HANDOFF.md.
+3. Use the continuity restore prompt when work crosses a task, agent, surface, host, context, or automation boundary.
 EOF

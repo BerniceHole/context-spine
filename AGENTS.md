@@ -28,6 +28,9 @@ Read in this order when maintaining this repository:
 ## Working rules
 
 - Keep the starter kit small.
+- Match process and evidence to material risk, using the lightest path that preserves repository truth, authority, evidence, and recoverability.
+- Do not create task or state artifacts for low-risk repository maintenance unless they prevent a real failure.
+- Report an unchanged blocker once. Repeat it only after repository state, authority, source freshness, or human input materially changes.
 - Prefer generic templates over project-specific examples.
 - Do not make optional files look required.
 - Do not perform broad formatting cleanup unless requested.

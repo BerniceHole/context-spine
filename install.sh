@@ -113,6 +113,14 @@ This is recovery order, not authority priority. Use `HANDOFF.md` to locate the w
 - Confirm the canonical project identity, revision or snapshot, and source freshness before acting.
 - Treat tool access, sandbox permission, and platform capability as technical access, not as project authorization.
 - Stay inside the task scope.
+- Match control effort to material risk. Use the lightest path that preserves canonical state, authority, evidence, and recoverability.
+- Local, reversible, in-scope correction does not create a new approval gate by itself.
+- If the accepted task authorizes in-scope fixes, apply them in the same task and revalidate.
+- Require reapproval only when the goal, allowed scope, dependency policy, hard-stop decisions, external effects, execution host, writer ownership, irreversibility, or integration outcome materially changes.
+- Stop safely on material conflicts, not incidental repository hygiene.
+- After a safe stop, report an unchanged blocker once. Repeat it only after relevant state, authority, source freshness, or human input changes.
+- Prefer normal Git diff and validation evidence.
+- Use exact artifact hashes only when byte identity is materially required.
 - Require an accepted work order before implementation when work is broad or materially ambiguous, touches a hard-stop area, authorizes external, irreversible, or cost-bearing effects, enables unattended writes, or permits multiple writers. A multi-file change alone does not require one.
 - Ask before changing hard-stop areas unless the current request or accepted work order explicitly authorizes the exact change.
 - If approval is required and no approval channel is available, stop safely and report the blocker.
@@ -169,12 +177,13 @@ Report every check as `Passed`, `Failed`, or `Not run`.
 
 ## Doc-sync
 
-- Update `ai-state/HANDOFF.md` after meaningful work and before a task, agent, surface, host, context, or automation boundary.
-- Update `ai-state/CURRENT_STATE.md` when current truth changes.
-- Reconcile canonical revision, source freshness, automation profile, and external effects when they change.
+- Update `ai-state/CURRENT_STATE.md` only when current truth meaningfully changes, not for every transient implementation defect.
+- Update `ai-state/HANDOFF.md` only after meaningful work or at a real task, agent, surface, host, context, or automation boundary.
+- When a state document is otherwise due for an update, reconcile the applicable canonical revision, source freshness, automation profile, and external effects.
 - Append to `ai-state/DECISIONS.md` for durable decisions.
-- Update the active task file when task status changes.
-- If no state document changes, report why.
+- Update the active task file only when its status, scope, authority, or meaningful correction state changes. Do not create a new task file solely to record a transient correction.
+- Do not create repeated status-only updates.
+- If no canonical state, authority, evidence, or continuation fact changed, do not modify state documents; report that no state update was needed.
 
 ## Final report
 

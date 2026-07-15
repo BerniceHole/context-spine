@@ -10,9 +10,11 @@ Use when work is broad or materially ambiguous, touches a hard-stop area, author
 
 Before producing the work order, identify missing user inputs. If the task cannot be responsibly scoped without them, ask first instead of drafting the work order.
 
-Output a task file with goal, non-goals, scope, ambiguities, validation, done conditions, expected state impact, and an authority envelope.
+Choose the lightest sufficient control mode by material risk. If the task is Direct and the human did not request a work-order artifact, do not create one merely to label the mode; report scope, validation, and reporting expectations concisely.
 
-The authority envelope must identify its source, execution surface and host, canonical revision, authoritative inputs and freshness, allowed reads and mutations, external effects, approval gates, isolation, active writer, trigger mode, prohibited mutations, and safe stop condition.
+For Bounded or Strict work, output a task file with goal, non-goals, scope, ambiguities, validation, done conditions, expected state impact, and the authority envelope. The envelope identifies its source, host, canonical revision, input freshness, allowed reads and mutations, external effects, gates, isolation, writer and integrator, trigger, prohibitions, and safe stop. Also include control mode, corrective authority, integration outcome, and evidence mode.
+
+Use Standard evidence by default. Artifact-locked evidence requires a material byte-identity reason and does not replace semantic validation.
 
 Use `Proposed` until the human or governing process accepts the work order. Use `Accepted` only when the scope and authority are approved; move to `Active` when execution begins.
 

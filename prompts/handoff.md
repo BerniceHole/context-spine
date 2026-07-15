@@ -1,7 +1,9 @@
 # Handoff Report Prompt
 
 ```txt
-Create a Context Spine continuity checkpoint. A checkpoint records current authority but does not create, broaden, or renew it.
+Create or update a Context Spine continuity checkpoint only at a meaningful task, agent, surface, host, context, or automation boundary. A checkpoint records current authority but does not create, broaden, or renew it.
+
+Do not rewrite ai-state/HANDOFF.md merely to restate the same blocker, status, or next action. Repeat a blocker only when state, authority, source freshness, evidence, or required human input changed.
 
 Update ai-state/HANDOFF.md with:
 - boundary type;

@@ -14,7 +14,7 @@ Context Spine v2 is a state-and-authority workflow specification for long-runnin
 
 The central failure in long-running AI collaboration is not merely limited model memory. The deeper failure is that canonical state, task scope, execution authority, source freshness, validation evidence, and continuation state are often implicit, scattered, stale, or mixed with conversation history. Stronger models can act across more tools, sources, agents, and hosts for longer periods; that increases both productive reach and the cost of an incorrect assumption.
 
-Context Spine externalizes the minimum required project control surface into five layers: canonical state, task contract, authority envelope, execution evidence, and continuity checkpoint. Its default Spine Four remain an agent operating contract, current-state document, decision log, and handoff document. Work orders, validation logs, quality bars, status views, progress logs, and reusable skills remain optional.
+Context Spine externalizes the minimum required project control surface into five layers: canonical state, task contract, authority envelope, execution evidence, and continuity checkpoint. Its default Spine Four remain an agent operating contract, current-state document, decision log, and handoff document. Work orders, validation logs, quality bars, status views, progress logs, and reusable skills remain optional. Control effort is proportional to material risk: use the lightest path that preserves state, authority, evidence, and recoverability.
 
 The method does not claim that more documentation or tighter prompting automatically improves agent performance. Every additional context artifact is a cost unless it prevents a specific failure. Context Spine therefore keeps the default file count small, separates stable protocol from dated product adapters, and expands only when a recurring failure mode justifies added structure.
 
@@ -131,7 +131,7 @@ The contribution is the integration, not any single artifact.
 
 ## 4. Core Thesis and Claim Levels
 
-Context Spine v2 is built on eight design claims.
+Context Spine v2 is built on nine design claims.
 
 1. Conversation alone is not a sufficient canonical project-state format.
 2. Current truth and historical rationale are different kinds of information.
@@ -141,6 +141,7 @@ Context Spine v2 is built on eight design claims.
 6. Independent reads can scale in parallel; overlapping writes require isolation or a single active writer and integration owner.
 7. Work is not complete until the final revision and external effects are validated, reconciled, and checkpointed.
 8. State should be small enough to read, structured enough to trust, and explicit enough to challenge.
+9. Control effort should be proportional to material risk; local, reversible, in-scope correction does not create a new approval gate by itself.
 
 These are design principles, not universal empirical results.
 
@@ -226,7 +227,17 @@ Includes:
 - external effects and validation;
 - blockers, next action, and exact continuation method.
 
-### 5.6 Capability and authority profile
+### 5.6 Control mode
+
+Control mode routes work through the lightest sufficient operating path:
+
+- `Direct` for explicit, local, reversible, low-risk work;
+- `Bounded` for scoped, reversible implementation with clear authority and a local integration outcome;
+- `Strict` for material hard stops, external or irreversible effects, cost, unattended or production operation, publication, security sensitivity, or multiple writers.
+
+Control mode is guidance selected by material risk. It is not new canonical state and does not add a required file or `CURRENT_STATE.md` field. Hard-stop, external-effect, unattended-write, writer-conflict, and higher-level policy rules always take precedence.
+
+### 5.7 Capability and authority profile
 
 Fixed product roles are replaced by a profile.
 
@@ -245,7 +256,7 @@ Fixed product roles are replaced by a profile.
 
 A product may support several profiles. The same product may have different authority on different hosts.
 
-### 5.7 Adapters and enforcement
+### 5.8 Adapters and enforcement
 
 Product adapters map current product behavior to the stable core. They are dated because availability, UI, memory, permission, and transport behavior changes.
 
@@ -317,7 +328,7 @@ Every optional artifact must have a role and removal path.
 
 A work order turns intent into an accepted task and authority contract.
 
-Required fields for work that crosses the gate:
+Direct work normally has no work-order artifact. Bounded and Strict work may be recorded in a work order when the gate is crossed. Required fields for those orders are:
 
 ```other
 status
@@ -325,7 +336,11 @@ status
 + required reading
 + allowed and forbidden scope
 + ambiguity gates and safe assumptions
++ control mode
 + authority envelope
++ corrective authority
++ integration outcome
++ evidence mode
 + plan
 + validation
 + done conditions
@@ -342,7 +357,19 @@ Proposed → Accepted → Active → Done
 
 `Accepted` means the scope and authority envelope have been approved. `Active` means execution has begun. A proposed order cannot authorize implementation.
 
-### 7.1 Authority envelope
+### 7.1 Control-mode decision matrix
+
+| Mode | Material-risk conditions | Work-order and execution path | Evidence and integration |
+| --- | --- | --- | --- |
+| Direct | Explicit, local, reversible, low-risk work with no unresolved hard-stop decision, external effect, unattended write, writer conflict, or material authority ambiguity. | No work order by default. Restore relevant state, execute, validate, and report. | Relevant checks and a concise result; no integration beyond the authorized local outcome. |
+| Bounded | Scoped, reversible implementation that crosses the work-order gate, has clear authority, and produces a local Git outcome. | Lightweight accepted work order, one active writer, and explicit in-scope corrective authority. | Standard diff and validation evidence plus a declared integration outcome. |
+| Strict | Material hard-stop, external, irreversible, cost-bearing, unattended, production, publication, security-sensitive, or multi-writer work. | Full authority envelope and explicit gates, with isolation, readback, idempotency, or stronger coordination as needed. | Stronger evidence as the risk requires; deployment or publication remains separately gated unless explicitly authorized. |
+
+Choose the mode by material risk, not file count, model capability, reasoning level, or desired thoroughness. Control mode is routing guidance rather than new canonical state.
+
+Hard-stop, external-effect, unattended-write, writer-conflict, and higher-level policy rules take precedence. Process inversion is a simplification trigger, not a new hard-stop category: when coordination, approval, artifact, or checkpoint overhead approaches the work itself, simplify the path within existing authority before adding another task, patch, checkpoint, approval, or report. Request new authority only when a material authority boundary changes.
+
+### 7.2 Authority envelope
 
 At minimum, identify:
 
@@ -363,7 +390,31 @@ Safe stop condition:
 
 The envelope records authority derived from the current human or governing process. It cannot override higher-level policy or grant more authority than its source.
 
-### 7.2 Automation profile
+Corrective authority must select one path:
+
+- in-scope fixes may be applied until done conditions pass; or
+- review only, with mutation requiring expanded authority.
+
+In-scope fixes remain covered only while the accepted goal, allowed paths and services, dependency policy, hard-stop decisions, external effects, execution host, writer ownership, irreversibility, and integration outcome remain materially unchanged.
+
+Integration outcome must identify the authorized stopping point:
+
+- leave a working-tree diff;
+- create a local commit;
+- prepare PR materials locally;
+- push a branch or open or update a pull request only when explicitly authorized;
+- deploy or publish only under a separate gate unless the work order explicitly authorizes it.
+
+Preparing PR materials locally is not authority to push a branch or open or update a pull request.
+
+Evidence mode is one of:
+
+- `Standard`: Git diff, relevant checks, final revision, and external-effect report;
+- `Artifact-locked`: exact hashes or signatures, used only when byte identity is materially required.
+
+Artifact locking proves byte identity, not semantic correctness. An exact hash does not override done conditions or validation results, and exact hashes are not the default for ordinary Markdown or source edits. An attachment must exist in the actual execution surface before a task can depend on it. Base64-embedded patches are an exceptional transport fallback, not a normal workflow.
+
+### 7.3 Automation profile
 
 Automation does not require a fifth default state file. The default profile belongs in `CURRENT_STATE.md`:
 
@@ -376,6 +427,8 @@ Profiles are intentionally small:
 - `Manual`: no unattended run is authorized.
 - `Read-only`: unattended work may observe and report but may not mutate project or external state.
 - `Bounded-write`: unattended mutation is permitted only inside a task-specific authority envelope with overlap, retry, idempotency, stop, and ownership rules.
+
+Automation profile describes unattended mutation authority. It is separate from the Direct, Bounded, and Strict control modes, which route work by material risk.
 
 For scheduled, event-driven, or unattended work, the active work order should also record:
 
@@ -406,8 +459,11 @@ intake
 → capability and authority preflight
 → work-order gate
 → choose execution and isolation
-→ execute
+→ implement
 → validate
+→ correct defects covered by current authority
+→ revalidate
+→ integrate according to the accepted outcome
 → reconcile canonical state
 → continuity checkpoint
 → report
@@ -417,17 +473,30 @@ intake
 
 Separate explicit instruction from inferred intent. Check whether required human input is missing: intent, source material, constraints, priorities, acceptance criteria, examples, scope, or approval.
 
-Low-risk, local, reversible work may proceed directly under an explicit request. Require a work order when work is broad or materially ambiguous, touches a hard-stop area, authorizes external, irreversible, or cost-bearing effects, enables unattended writes, or permits multiple writers. A multi-file change alone does not require one.
+Choose the lightest sufficient control mode. Low-risk, local, reversible work may proceed in Direct mode under an explicit request without creating a work order merely to label the mode. Require a work order when work is broad or materially ambiguous, touches a hard-stop area, authorizes external, irreversible, or cost-bearing effects, enables unattended writes, or permits multiple writers. A multi-file change alone does not require one.
 
-### 8.2 Project stewardship
+### 8.2 New-project bootstrap
+
+When a human explicitly designates an empty directory as a new repository-backed project, local bootstrap authority includes creating that directory if needed and running `git init` unless forbidden. Until the first commit, record the revision as `unborn HEAD`. Follow an explicit branch policy or the configured Git default; do not invent a branch name.
+
+Minimal `.gitignore` entries for incidental OS or editor metadata are allowed. The first local commit is allowed only when the accepted integration outcome authorizes it.
+
+Classify unexpected contents before bootstrap:
+
+- material mismatches include existing Git history, secrets or credentials, conflicting project files, unrelated source, an ambiguous project root, or contradictory project identity;
+- incidental mismatches include `.DS_Store`, harmless ignored editor caches, equivalent OS metadata, and harmless generated files that can be ignored without changing project identity.
+
+Only material mismatches force a safe stop. This bootstrap authority does not permit remote push, deployment, publication, dependency installation, or invention of product or architecture decisions.
+
+### 8.3 Project stewardship
 
 An assistant may surface weak assumptions, quality risks, research gaps, unclear success criteria, sequencing problems, and improvement opportunities. Suggestions are not decisions and do not authorize scope expansion.
 
-### 8.3 State restoration
+### 8.4 State restoration
 
 Use the canonical read order. Confirm the actual revision, current working tree or source snapshot, external-source freshness, and any mismatch with the checkpoint.
 
-### 8.4 Capability and authority preflight
+### 8.5 Capability and authority preflight
 
 Answer before action:
 
@@ -442,36 +511,42 @@ Answer before action:
 
 Tool access and sandbox permission do not answer these questions by themselves.
 
-### 8.5 Work-order gate
+### 8.6 Work-order gate
 
-If the actor cannot state goal, non-goals, scope, ambiguities, authority, validation, and done conditions, it should not start broad implementation. The order must be `Accepted` or `Active`.
+If the actor cannot state goal, non-goals, scope, ambiguities, authority, validation, and done conditions, it should not start broad implementation. A required order must be `Accepted` or `Active`. Direct work does not create a task file solely to declare that it is Direct.
 
-### 8.6 Plan and choose isolation
+### 8.7 Plan and choose isolation
 
 Identify likely files, external effects, validation, and approval points. Parallelize independent read lanes. Keep one writer per artifact. For parallel writes, use dedicated worktrees or separate writable destinations with non-overlapping scope and a named integrator; a branch or task alone does not isolate files.
 
-### 8.7 Execute
+### 8.8 Implement
 
 Stay inside scope and authority. If a required change is outside either, request expansion. If no approval channel exists, stop safely. A child agent has no broader project authority than its parent task.
 
-### 8.8 Validate
+### 8.9 Validate, correct, and integrate
 
 Tie validation to the actual revision, environment, and integrated result. Report every required check as `Passed`, `Failed`, or `Not run` with a reason.
 
-### 8.9 Reconcile canonical state
+If validation or fresh review finds an implementation defect covered by current corrective authority, fix it in the same task, rerun the affected checks, and integrate according to the accepted outcome. Do not create another work order or approval gate solely because a corrective pass is needed.
+
+Repeated failures should trigger review of scope and decomposition before more protocol machinery is added. Split work into independently reviewable units when omission risk is material; increased reasoning effort does not substitute for decomposition.
+
+### 8.10 Reconcile canonical state
 
 Update the minimum necessary artifacts:
 
-- `CURRENT_STATE.md` when current truth, canonical revision, external freshness, or automation profile changes;
+- `CURRENT_STATE.md` only when current truth meaningfully changes, not for every transient implementation defect; when updating it, reconcile the applicable canonical revision, external freshness, and automation profile;
 - `DECISIONS.md` for durable accepted, reversed, or superseded decisions;
-- the active work order when status or authority changes;
-- `HANDOFF.md` after meaningful work and before a boundary;
+- the active work order when status, scope, authority, or meaningful intermediate correction state changes, without creating a new task file only to record a transient correction;
+- `HANDOFF.md` after meaningful work or at a real boundary, not to restate an unchanged blocker or next action;
 - `STATUS.md` only as a projection;
 - `PROGRESS_LOG.md` only when audit history is useful.
 
 Serialize state writes through the active state owner.
 
-### 8.10 Checkpoint and report
+If canonical state, authority, evidence, and continuation facts did not change, do not modify state documents; report that no update was needed. Report an unchanged blocker once and repeat it only after relevant state, authority, source freshness, evidence, or human input changes.
+
+### 8.11 Checkpoint and report
 
 The checkpoint names the boundary, revision, host, task, authority, owner, pending approvals, effects, validation, blockers, next action, and continuation method.
 
@@ -591,6 +666,18 @@ Rules:
 | Unsupported handoff loss | Required state does not move across products or hosts. | Name source, destination, revision, transport, and checkpoint. |
 | Recall promotion | Memory, cache, transcript, or draft becomes accepted truth. | Keep advisory until reviewed and promoted. |
 | Secret leakage | Sensitive values enter durable state. | Redaction, secret scanning, and no-secrets policy. |
+| Process inversion | The operating protocol becomes more costly than the work and generates additional approval, artifact, correction, or reporting loops. | Simplify to the lightest sufficient control path inside existing authority. |
+
+Mitigate process inversion with:
+
+- the lightest sufficient control mode;
+- one authority envelope for related local, reversible steps;
+- normal Git evidence by default;
+- in-scope correction under existing authority;
+- one report per unchanged blocker;
+- simplification after repeated protocol-induced failure;
+- independently reviewable task decomposition;
+- no substitution of reasoning effort for decomposition.
 
 ---
 
@@ -644,6 +731,14 @@ Do not publish a local result until the baseline, task classes, failures, and me
 | Continuity completeness | Applicable revision, host, authority, owner, effects, validation, and continuation fields are current. |
 | Human rework | Time spent correcting intent, reconstructing state, resolving conflicts, or reversing work. |
 | Context cost | Time or token overhead introduced by the protocol. |
+| Approval round trips per task | Number of human approval exchanges required from intake through the accepted integration outcome. |
+| Protocol-induced blockers | Stops caused by workflow wording or artifacts rather than a material authority, state, or safety boundary. |
+| Duplicate blocker reports | Repeated reports of the same blocker without a relevant state, authority, source, evidence, or input change. |
+| Time to first useful diff | Elapsed time from accepted instruction to the first reviewable in-scope change. |
+| Coordination time versus implementation time | Time spent coordinating, approving, or producing artifacts compared with time spent doing and validating the work. |
+| Corrections completed under existing authority | In-scope defects completed without unnecessary reapproval or a replacement work order. |
+| Materially necessary artifact-locked contracts | Artifact-locked evidence uses with a documented byte-identity requirement. |
+| Human rework caused by protocol wording | Rework caused by ambiguous, contradictory, or over-broad protocol language. |
 
 ### 12.4 Expansion and reduction criteria
 
@@ -685,6 +780,8 @@ The canonical reference implementation lives in the repository files, not duplic
 | ChatGPT Work adapter | [`chatgpt/WORK_ADAPTER.md`](chatgpt/WORK_ADAPTER.md) |
 | Codex execution adapter | [`codex/EXECUTION_ADAPTER.md`](codex/EXECUTION_ADAPTER.md) |
 | End-to-end trace | [`examples/design-token-export-trace.md`](examples/design-token-export-trace.md) |
+| New-project bootstrap trace | [`examples/new-project-bootstrap.md`](examples/new-project-bootstrap.md) |
+| Bounded correction and integration trace | [`examples/bounded-correction-and-integration.md`](examples/bounded-correction-and-integration.md) |
 | Optional verifier | [`scripts/spine-doctor`](scripts/spine-doctor) |
 
 ### 13.1 Minimal layout

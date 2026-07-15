@@ -27,11 +27,28 @@ Core invariants:
 - capability is not authority;
 - a platform approval is not automatically project approval;
 - source freshness and revision must be explicit;
+- control effort is proportional to material risk;
+- use the lightest control path that preserves canonical state, authority, evidence, and recoverability;
+- local, reversible, in-scope correction does not create a new approval gate by itself;
+- when control overhead approaches the work itself, simplify the path within current authority before adding another task, artifact, checkpoint, or approval;
+- hard-stop, external-effect, unattended-write, and writer-conflict rules take precedence over proportional simplification;
 - implementation needs an accepted work order when it is broad or materially ambiguous, touches a hard-stop area, authorizes external, irreversible, or cost-bearing effects, enables unattended writes, or permits multiple writers; a multi-file change alone does not trigger the gate;
 - independent reads may run in parallel, but overlapping writes are serialized or isolated;
 - external side effects need evidence and a sync-back owner;
 - a handoff records authority but does not create or renew it;
 - validation is always reported as `Passed`, `Failed`, or `Not run`.
+
+## Control modes
+
+Control modes are risk-based routing guidance, not canonical state or additional required files.
+
+| Mode | Use when | Operating path |
+| --- | --- | --- |
+| Direct | Work is explicit, local, reversible, and low-risk, with no unresolved hard stop, external effect, unattended write, writer conflict, or material authority ambiguity. | No work order by default. Restore relevant state, execute, validate, and report concisely. |
+| Bounded | Implementation is scoped and reversible, crosses the work-order gate, has clear authority, and leads to a local Git outcome. | Use a lightweight accepted work order, one active writer, in-scope corrective authority, a declared integration outcome, and standard diff and validation evidence. |
+| Strict | Work involves a material hard stop, external or irreversible effect, cost, unattended or production operation, publication, security sensitivity, or multiple writers. | Use the full authority envelope, explicit gates, stronger evidence, isolation, readback, idempotency, or a separate deployment or publication gate as needed. |
+
+Choose by material risk, not file count, model capability, reasoning level, or desired thoroughness. Control mode is separate from the `Manual`, `Read-only`, and `Bounded-write` automation profiles. Proportional control operates inside the hard-stop and authority boundaries; it never bypasses them.
 
 ## Quick start
 
@@ -73,7 +90,7 @@ For a new project:
 
 ```txt
 Start this new project with Context Spine v2 using https://github.com/BerniceHole/context-spine.
-Confirm the canonical project location and write authority. Create minimal operating state only: AGENTS.md and ai-state/CURRENT_STATE.md, DECISIONS.md, HANDOFF.md. Do not design the product structure, docs tree, roadmap, architecture, design system, brand system, information architecture, or domain model unless explicitly asked. Do not perform external actions. Keep placeholders short. Do not add optional docs unless a real repeated failure justifies them. Ask before making product or architecture assumptions.
+Confirm the designated project location and write authority. If the human explicitly designates an empty directory as a new repository-backed project, create it if needed, initialize Git unless forbidden, and add only minimal repository hygiene for incidental OS or editor metadata. Use `unborn HEAD` until the first commit, follow an explicit branch policy or the configured Git default, and make a first local commit only when the accepted integration outcome authorizes it. Create minimal operating state only: AGENTS.md and ai-state/CURRENT_STATE.md, DECISIONS.md, HANDOFF.md. Do not design the product structure, docs tree, roadmap, architecture, design system, brand system, information architecture, or domain model unless explicitly asked. Do not install dependencies or perform remote, deployment, or publication actions. Keep placeholders short. Do not add optional docs unless a real repeated failure justifies them. Ask before making product or architecture assumptions.
 ```
 
 ### Use with ChatGPT Work or Codex
@@ -133,7 +150,9 @@ context-spine/
 │  ├─ validation-log.md
 │  └─ quality-bar.md
 ├─ examples/
-│  └─ design-token-export-trace.md
+│  ├─ bounded-correction-and-integration.md
+│  ├─ design-token-export-trace.md
+│  └─ new-project-bootstrap.md
 └─ scripts/
    ├─ init-context-spine.sh
    └─ spine-doctor

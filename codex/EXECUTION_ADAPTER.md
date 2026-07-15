@@ -9,6 +9,36 @@ This adapter maps current Codex execution modes to Context Spine v2. It does not
 
 Codex is an execution surface, not the authority source. Select a Codex environment only after the task contract identifies the canonical project, revision, allowed mutations, approval gates, isolation, write owner, validation, and continuity method.
 
+## Proportional control
+
+Route work through the lightest sufficient control mode:
+
+- `Direct`: explicit, local, reversible, low-risk work with no unresolved hard stop, external effect, unattended write, writer conflict, or material authority ambiguity. It normally restores relevant state, executes, validates, and reports without a work order.
+- `Bounded`: scoped, reversible implementation that crosses the work-order gate, has clear authority, and produces a local Git outcome. Use a lightweight accepted work order, one active writer, in-scope corrective authority, a declared integration outcome, and Standard evidence.
+- `Strict`: material hard-stop, external, irreversible, cost-bearing, unattended, production, publication, security-sensitive, or multi-writer work. Use the full authority envelope and stronger gates, evidence, isolation, readback, or idempotency as needed.
+
+Choose by material risk, not file count, model capability, reasoning level, or desired thoroughness. Control mode is separate from the `Manual`, `Read-only`, and `Bounded-write` automation profiles. Hard-stop, external-effect, unattended-write, writer-conflict, and higher-level policy rules always take precedence.
+
+If validation or review finds an implementation defect covered by current corrective authority, fix it in the same task, rerun affected checks, and integrate according to the accepted outcome. A corrective pass alone does not justify another work order or approval. Treat process inversion—protocol overhead approaching the work itself—as a simplification trigger: simplify within current authority before adding another task, artifact, checkpoint, approval, or report.
+
+### Evidence proportionality
+
+Ordinary source and Markdown work uses Git diff, relevant tests or checks, the final revision, and external-effect reporting. Exact hashes or signatures are appropriate for signed output, release artifacts, security-sensitive output, or materially required cross-host byte identity; they are not the default for ordinary edits. Exact identity does not prove semantic correctness or acceptance.
+
+Verify that an attachment exists in the actual Codex task surface before depending on it. Base64-embedded patches are an exceptional transport fallback, not a normal edit path.
+
+### Safe stops and task decomposition
+
+Report an unchanged blocker once. Do not repeatedly inspect or report it unless repository state, authority, source freshness, or human input changes.
+
+Higher reasoning effort does not replace decomposition, independent review, or requirement traceability, and reasoning level never broadens authority. When omission risk is material, split implementation into independently testable behavior. Use lightweight traceability when helpful:
+
+```text
+requirement
+→ implementation location
+→ automated or manual evidence
+```
+
 ## Instruction and state boundaries
 
 Codex discovers an instruction chain from global guidance through the project root toward the current working directory, with closer instructions taking precedence. Current official documentation says the combined project-instruction limit is 32 KiB by default and that the chain is constructed once per run.

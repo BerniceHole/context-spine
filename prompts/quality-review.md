@@ -23,6 +23,24 @@ Check:
 - state document accuracy;
 - continuity checkpoint completeness.
 
+For each required finding, include:
+
+Finding type:
+- implementation defect;
+- missing evidence;
+- scope expansion;
+- product or design decision;
+- hard-stop or external-effect change.
+
+Correction routing:
+- covered by current accepted authority;
+- accepted amendment required;
+- new work order required;
+- human input required;
+- hard-stop approval required.
+
+The review classifies authority coverage; it does not itself grant mutation authority. A verdict of needs revision does not automatically mean creating another planning cycle. Route an in-scope implementation defect back into the active implementation loop when current accepted authority already covers it.
+
 Return:
 - ready / needs revision / blocked / blocked by missing user input / blocked by missing authority;
 - reasons;

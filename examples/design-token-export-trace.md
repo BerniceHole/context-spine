@@ -46,6 +46,12 @@ Forbidden:
 - Trigger mode: interactive
 - Safe stop: stop on revision mismatch, concurrent writer, or missing approval
 
+## Control and integration
+- Control mode: Bounded
+- Corrective authority: in-scope fixes may be applied until done conditions pass
+- Integration outcome: create one local commit on success
+- Evidence mode: Standard — diff, relevant checks, final revision, and external-effect report
+
 ## Validation
 - npm run lint
 - npm run typecheck

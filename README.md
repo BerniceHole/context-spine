@@ -95,7 +95,7 @@ Confirm the designated project location and write authority. If the human explic
 
 ### Use with ChatGPT Work or Codex
 
-For ChatGPT projects, paste or adapt [`chatgpt/PROJECT_INSTRUCTIONS.md`](chatgpt/PROJECT_INSTRUCTIONS.md). Use [`chatgpt/RESUME_PROMPT.md`](chatgpt/RESUME_PROMPT.md) after a task, agent, surface, host, context, or automation boundary. The dated [`chatgpt/WORK_ADAPTER.md`](chatgpt/WORK_ADAPTER.md) explains current Work, project, source, memory, and scheduled-task boundaries.
+For ChatGPT projects, [`chatgpt/PROJECT_INSTRUCTIONS.md`](chatgpt/PROJECT_INSTRUCTIONS.md) is a paste-ready base capped at 6,000 characters, leaving room for project-specific instructions. Keep private preferences, confidential context, personal working style, and organization-specific rules in the private ChatGPT Project rather than this public starter repository. Use [`chatgpt/RESUME_PROMPT.md`](chatgpt/RESUME_PROMPT.md) after a task, agent, surface, host, context, or automation boundary. The dated [`chatgpt/WORK_ADAPTER.md`](chatgpt/WORK_ADAPTER.md) explains current Work, project, source, memory, and scheduled-task boundaries.
 
 Codex discovers project instructions through an `AGENTS.md` chain. Put required project guidance in the target repository and use the dated [`codex/EXECUTION_ADAPTER.md`](codex/EXECUTION_ADAPTER.md) for current local, worktree, cloud, remote-host, permission, subagent, and automation behavior.
 

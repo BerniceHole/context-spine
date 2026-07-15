@@ -28,6 +28,7 @@ Read in this order when maintaining this repository:
 ## Working rules
 
 - Keep the starter kit small.
+- Keep `chatgpt/PROJECT_INSTRUCTIONS.md` paste-ready and at or below 6,000 characters, including headings and whitespace.
 - Match process and evidence to material risk, using the lightest path that preserves repository truth, authority, evidence, and recoverability.
 - Do not create task or state artifacts for low-risk repository maintenance unless they prevent a real failure.
 - Report an unchanged blocker once. Repeat it only after repository state, authority, source freshness, or human input materially changes.
@@ -56,6 +57,13 @@ Use the smallest relevant checks:
 
 ```sh
 git diff --check
+python3 - <<'PY2'
+from pathlib import Path
+p = Path("chatgpt/PROJECT_INSTRUCTIONS.md")
+text = p.read_text()
+print(f"{p}: {len(text)} characters")
+assert len(text) <= 6000, f"{p} exceeds the 6,000-character budget"
+PY2
 grep -Rni "REPLACE_WITH_" . --exclude-dir=.git --exclude=AGENTS.md || true
 git ls-files ai-state
 ```
@@ -63,6 +71,7 @@ git ls-files ai-state
 Expected:
 
 - no root `ai-state/` files are tracked;
+- `chatgpt/PROJECT_INSTRUCTIONS.md` is paste-ready and no longer than 6,000 characters, including headings and whitespace;
 - no maintainer-specific language appears in reusable prompts/templates;
 - copyright-holder text should appear only in `LICENSE`;
 - links and file paths referenced by `README.md` exist.
